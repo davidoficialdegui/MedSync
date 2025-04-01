@@ -65,19 +65,9 @@ int esFechaFutura(int diaCita, int mesCita, int anioCita) {
 
     return 0; // La cita es en el pasado o en el presente
 }
-// Función para conectar a la base de datos
-sqlite3* conectarBD() {
-    sqlite3 *db;
-    if (sqlite3_open("clinica.db", &db)) {
-        printf("Error al abrir la base de datos: %s\n", sqlite3_errmsg(db));
-        return NULL;
-    }
-    return db;
-}
 
 // Función para obtener un ID de médico aleatorio
-char* obtenerIdMedicoAleatorio() {
-    sqlite3 *db = conectarBD();
+char* obtenerIdMedicoAleatorio(sqlite3 *db) {
     if (!db) return NULL;
     
     sqlite3_stmt *stmt;
@@ -85,7 +75,6 @@ char* obtenerIdMedicoAleatorio() {
     
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
         printf("Error al obtener ID de médico: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
         return NULL;
     }
     
@@ -95,18 +84,12 @@ char* obtenerIdMedicoAleatorio() {
     }
     
     sqlite3_finalize(stmt);
-    sqlite3_close(db);
     return id_medico;
 }
-int idCitaExiste(const char *idCita) {
-    sqlite3 *db;
+int idCitaExiste(sqlite3 *db, const char *idCita) {
     sqlite3_stmt *stmt;
     int existe = 0; // 0 significa que no existe
 
-    if (sqlite3_open("hospital.db", &db) != SQLITE_OK) {
-        printf("Error al abrir la base de datos.\n");
-        return 1; // Consideramos que existe en caso de error
-    }
 
     const char *sql = "SELECT COUNT(*) FROM Cita_Medica WHERE Id_Cita = ?;";
     
@@ -119,44 +102,43 @@ int idCitaExiste(const char *idCita) {
     }
 
     sqlite3_finalize(stmt);
-    sqlite3_close(db);
     
     return existe; // Retorna 1 si existe, 0 si no existe
 }
 
-char *generarIdCita() {
+char *generarIdCita(sqlite3 *db) {
     static char id[10];
     do {
         sprintf(id, "CITA%04d", rand() % 10000);
-    } while (idCitaExiste(id)); // Verificar que no se repita en la BD
+    } while (idCitaExiste(db, id)); // Verificar que no se repita en la BD
     return id;
 }
 
-void registrarCita(const char *fecha, const char *motivo, const char *estado, const char *id_paciente) {
-    char  idCita[20],*id_medico = obtenerIdMedicoAleatorio();
+void registrarCita(sqlite3 *db, const char *fecha, const char *motivo, const char *estado, const char *id_paciente) {
+    char  *id_medico = obtenerIdMedicoAleatorio(db);
     if (!id_medico) {
         printf("No se pudo asignar un médico.\n");
         return;
     }
-    generarIdCita(idCita);
-    sqlite3 *db = conectarBD();
-    if (!db) return;
+    char *id_cita = generarIdCita(db);
+    if (!id_cita) {
+        printf("Error al generar ID de la cita.\n");
+        return;
+    }
 
     char sql[512];
-    sprintf(sql, "INSERT INTO Cita_Medica (Id_Cita, Fecha_C, Motivo, Estado, Id_Paciente, Id_Medico) VALUES (NULL, '%s', '%s', '%s', '%s', '%s');", fecha, motivo, estado, id_paciente, id_medico);
+    sprintf(sql, "INSERT INTO Cita_Medica (Id_Cita, Fecha_C, Motivo, Estado, Id_Paciente, Id_Medico) VALUES (NULL, '%s', '%s', '%s', '%s', '%s');", id_cita, fecha, motivo, estado, id_paciente, id_medico);
     
     if (sqlite3_exec(db, sql, 0, 0, NULL) != SQLITE_OK) {
         printf("Error al registrar la cita: %s\n", sqlite3_errmsg(db));
     } else {
         printf("Cita registrada con éxito.\n");
     }
-    
-    sqlite3_close(db);
+    free(id_medico);
 }
 
 // Función para consultar citas
-void consultarCitas() {
-    sqlite3 *db = conectarBD();
+void consultarCitas( sqlite3 *db) {
     if (!db) return;
     
     sqlite3_stmt *stmt;
@@ -164,7 +146,6 @@ void consultarCitas() {
     
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
         printf("Error al consultar citas: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
         return;
     }
     
@@ -178,12 +159,11 @@ void consultarCitas() {
     }
     
     sqlite3_finalize(stmt);
-    sqlite3_close(db);
 }
 
 // Función para cancelar una cita
-void cancelarCita(const char *id_cita) {
-    sqlite3 *db = conectarBD();
+void cancelarCita(sqlite3 *db ,const char *id_cita) {
+
     if (!db) return;
 
     char sql[256];
@@ -195,7 +175,6 @@ void cancelarCita(const char *id_cita) {
         printf("Cita cancelada con éxito.\n");
     }
     
-    sqlite3_close(db);
 }
 
 
@@ -214,12 +193,12 @@ void gestionarCitas(sqlite3 *db, const char *idPaciente) {
         switch(opcion) {
             case 1:
                 {
-                    char idCita[20], idMedico[20], motivo[100], fecha[20], estado[20];
+                    char *idCita, *idMedico, motivo[100], fecha[20], estado[20];
                     // Obtener un Id_Cita único
-                    generarIdCita(db, idCita);
+                    idCita = generarIdCita(db);
 
                     // Obtener un Id_Medico aleatorio
-                    obtenerIdMedicoAleatorio(db, idMedico);
+                    idMedico = obtenerIdMedicoAleatorio(db);
                     printf("\nCoger cita:\n");
                     printf("Motivo: ");
                     scanf("%s", motivo);
@@ -239,20 +218,20 @@ void gestionarCitas(sqlite3 *db, const char *idPaciente) {
                     printf("Estado: ");
                     scanf("%s", estado);
                     printf("\nCita programada con motivo '%s' para la fecha '%s' con estado '%s'.\n", motivo, fecha, estado);
-                    registrarCita(fecha, motivo, estado, idPaciente);
+                    registrarCita(db, fecha, motivo, estado, idPaciente);
                 }
                 break;
             case 2:
                 printf("\nConsultando citas programadas...\n");
-                consultarCitas();
+                consultarCitas(db);
                 break;
 
             case 3:
                 printf("\nCancelando una cita...\n");
                 printf("\nIngrese el ID de la cita a cancelar: ");
-                const char *id_cita;
+                char id_cita[20];  // Asigna suficiente espacio
                 scanf("%s", id_cita);
-                cancelarCita(id_cita);
+                cancelarCita(db, id_cita);
                 break;
             case 4:
                 return; // Salir de la gestión de citas
@@ -262,15 +241,9 @@ void gestionarCitas(sqlite3 *db, const char *idPaciente) {
     }
 }
 
-void consultarHistorial(const char *id_paciente) {
-    sqlite3 *db;
+void consultarHistorial(    sqlite3 *db,const char *id_paciente) {
     sqlite3_stmt *stmt;
     int opcion;
-
-    if (sqlite3_open("clinica.db", &db) != SQLITE_OK) {
-        printf("Error al abrir la base de datos: %s\n", sqlite3_errmsg(db));
-        return;
-    }
 
     while (1) {
         printf("\nCONSULTAR HISTORIAL MEDICO\n");
@@ -309,7 +282,6 @@ void consultarHistorial(const char *id_paciente) {
                 "WHERE Historial_Medico.Id_Paciente = ?";
                 break;
             case 6:
-                sqlite3_close(db);
                 return; // Salir de la consulta del historial médico
             default:
                 printf("Opcion no valida. Intente de nuevo.\n");
@@ -336,8 +308,7 @@ char* generarIdReporte() {
 }
 
 // Función para registrar un reporte en la base de datos
-void registrarReporte(const char *descripcion, const char *fecha, const char *id_paciente, const char *id_empleado, const char *id_medico) {
-    sqlite3 *db = conectarBD();
+void registrarReporte(sqlite3 *db, const char *descripcion, const char *fecha, const char *id_paciente, const char *id_empleado, const char *id_medico) {
     if (!db) return;
 
     char sql[512];
@@ -355,10 +326,9 @@ void registrarReporte(const char *descripcion, const char *fecha, const char *id
         printf("Reporte registrado con éxito.\n");
     }
 
-    sqlite3_close(db);
 }
  // Función para atender al cliente y registrar un reporte
-void atencionCliente() {
+void atencionCliente(sqlite3 *db) {
     char descripcion[200];
     char fecha[20];
     char id_paciente[20];
@@ -367,7 +337,7 @@ void atencionCliente() {
 
     // La descripción del problema
     printf("\nDescripción del problema: ");
-    scanf("\n]%c", descripcion);  // Leer la descripción completa
+    scanf("\n%c", descripcion);  // Leer la descripción completa
     // Validación de la fecha
     while (1) {
         printf("Fecha de la consulta (formato: dd/mm/yyyy): ");
@@ -391,7 +361,7 @@ void atencionCliente() {
     scanf("%s", id_medico);
 
     // Registrar el reporte en la base de datos
-    registrarReporte(descripcion, fecha, id_paciente, id_empleado, id_medico);
+    registrarReporte(db, descripcion, fecha, id_paciente, id_empleado, id_medico);
 
     // Mostrar la información registrada
     printf("\nDescripción registrada: %s\n", descripcion);

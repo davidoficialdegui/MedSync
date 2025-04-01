@@ -49,12 +49,12 @@ void menuPaciente(sqlite3 *db) {
 
         switch(opcion) {
             case 1:
-                gestionarCitas(db);
+                gestionarCitas(db, id);
                 break;
             case 2:
                 printf("ingrese el id del paciente:");
                 scanf("%c", &id);
-                consultarHistorial(id);
+                consultarHistorial(db, id);
                 break;
             case 3:
                 atencionCliente(db);
