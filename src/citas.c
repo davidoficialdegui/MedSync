@@ -1,90 +1,136 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "citas.h"
-#include "bd.h"
+#include <sqlite3.h>
 
-#define MAX_CITAS 100
-
-typedef struct {
-    int id_cita;
-    int id_paciente;
-    int id_medico;
-    char fecha[11];
-    char hora[6];
-    char motivo[100];
-    char estado[20];
-} Cita;
-
-Cita citas[MAX_CITAS];
-int totalCitas = 0;
+#define DB_NAME "MedSync.bd"
 
 void agregarCita(int id_paciente, int id_medico, const char *fecha, const char *hora, const char *motivo) {
-    if (totalCitas < MAX_CITAS) {
-        citas[totalCitas].id_cita = totalCitas + 1;
-        citas[totalCitas].id_paciente = id_paciente;
-        citas[totalCitas].id_medico = id_medico;
-        strcpy(citas[totalCitas].fecha, fecha);
-        strcpy(citas[totalCitas].hora, hora);
-        strcpy(citas[totalCitas].motivo, motivo);
-        strcpy(citas[totalCitas].estado, "Programada");
-        totalCitas++;
-        printf("Cita programada con éxito. ID de cita: %d\n", totalCitas);
-    } else {
-        printf("No se pueden agendar más citas.\n");
+    sqlite3 *db;
+    char *errMsg = 0;
+    int rc = sqlite3_open(DB_NAME, &db);
+    if (rc) {
+        printf("Error al abrir la base de datos: %s\n", sqlite3_errmsg(db));
+        return;
     }
+
+    char sql[512];
+    snprintf(sql, sizeof(sql), "INSERT INTO Citas (Fecha_C, Motivo, Estado, Id_Paciente, Id_Medico) VALUES ('%s %s', '%s', 'Programada', %d, %d);", fecha, hora, motivo, id_paciente, id_medico);
+
+    rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
+    if (rc != SQLITE_OK) {
+        printf("Error al agregar la cita: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    } else {
+        printf("Cita programada con éxito.\n");
+    }
+    sqlite3_close(db);
 }
 
 void modificarCita(int id_cita, const char *nueva_fecha, const char *nueva_hora, const char *nuevo_motivo) {
-    for (int i = 0; i < totalCitas; i++) {
-        if (citas[i].id_cita == id_cita) {
-            strcpy(citas[i].fecha, nueva_fecha);
-            strcpy(citas[i].hora, nueva_hora);
-            strcpy(citas[i].motivo, nuevo_motivo);
-            printf("Cita modificada exitosamente.\n");
-            return;
-        }
+    sqlite3 *db;
+    char *errMsg = 0;
+    int rc = sqlite3_open(DB_NAME, &db);
+    if (rc) {
+        printf("Error al abrir la base de datos: %s\n", sqlite3_errmsg(db));
+        return;
     }
-    printf("Cita no encontrada.\n");
+
+    char sql[512];
+    snprintf(sql, sizeof(sql), "UPDATE Citas SET Fecha_C='%s %s', Motivo='%s' WHERE Id_Cita=%d;", nueva_fecha, nueva_hora, nuevo_motivo, id_cita);
+
+    rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
+    if (rc != SQLITE_OK) {
+        printf("Error al modificar la cita: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    } else {
+        printf("Cita modificada exitosamente.\n");
+    }
+    sqlite3_close(db);
 }
 
 void cancelarCita(int id_cita) {
-    for (int i = 0; i < totalCitas; i++) {
-        if (citas[i].id_cita == id_cita) {
-            strcpy(citas[i].estado, "Cancelada");
-            printf("Cita cancelada con éxito.\n");
-            return;
-        }
+    sqlite3 *db;
+    char *errMsg = 0;
+    int rc = sqlite3_open(DB_NAME, &db);
+    if (rc) {
+        printf("Error al abrir la base de datos: %s\n", sqlite3_errmsg(db));
+        return;
     }
-    printf("Cita no encontrada.\n");
+
+    char sql[128];
+    snprintf(sql, sizeof(sql), "UPDATE Citas SET Estado='Cancelada' WHERE Id_Cita=%d;", id_cita);
+
+    rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
+    if (rc != SQLITE_OK) {
+        printf("Error al cancelar la cita: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    } else {
+        printf("Cita cancelada con éxito.\n");
+    }
+    sqlite3_close(db);
 }
 
 void listarCitasPaciente(int id_paciente) {
+    sqlite3 *db;
+    sqlite3_stmt *stmt;
+    int rc = sqlite3_open(DB_NAME, &db);
+    if (rc) {
+        printf("Error al abrir la base de datos: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+
+    char sql[128];
+    snprintf(sql, sizeof(sql), "SELECT Id_Cita, Fecha_C, Motivo, Estado FROM Citas WHERE Id_Paciente=%d;", id_paciente);
+
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+    if (rc != SQLITE_OK) {
+        printf("Error al obtener citas: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return;
+    }
+
     printf("\n--- Citas del Paciente %d ---\n", id_paciente);
-    int found = 0;
-    for (int i = 0; i < totalCitas; i++) {
-        if (citas[i].id_paciente == id_paciente) {
-            printf("ID: %d | Fecha: %s | Hora: %s | Motivo: %s | Estado: %s\n",
-                   citas[i].id_cita, citas[i].fecha, citas[i].hora, citas[i].motivo, citas[i].estado);
-            found = 1;
-        }
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        printf("ID: %d | Fecha: %s | Motivo: %s | Estado: %s\n",
+               sqlite3_column_int(stmt, 0),
+               sqlite3_column_text(stmt, 1),
+               sqlite3_column_text(stmt, 2),
+               sqlite3_column_text(stmt, 3));
     }
-    if (!found) {
-        printf("No hay citas programadas para este paciente.\n");
-    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
 }
 
 void listarCitasMedico(int id_medico) {
+    sqlite3 *db;
+    sqlite3_stmt *stmt;
+    int rc = sqlite3_open(DB_NAME, &db);
+    if (rc) {
+        printf("Error al abrir la base de datos: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+
+    char sql[128];
+    snprintf(sql, sizeof(sql), "SELECT Id_Cita, Id_Paciente, Fecha_C, Estado FROM Citas WHERE Id_Medico=%d;", id_medico);
+
+    rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+    if (rc != SQLITE_OK) {
+        printf("Error al obtener citas: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return;
+    }
+
     printf("\n--- Citas del Médico %d ---\n", id_medico);
-    int found = 0;
-    for (int i = 0; i < totalCitas; i++) {
-        if (citas[i].id_medico == id_medico) {
-            printf("ID: %d | Paciente: %d | Fecha: %s | Hora: %s | Estado: %s\n",
-                   citas[i].id_cita, citas[i].id_paciente, citas[i].fecha, citas[i].hora, citas[i].estado);
-            found = 1;
-        }
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        printf("ID: %d | Paciente: %d | Fecha: %s | Estado: %s\n",
+               sqlite3_column_int(stmt, 0),
+               sqlite3_column_int(stmt, 1),
+               sqlite3_column_text(stmt, 2),
+               sqlite3_column_text(stmt, 3));
     }
-    if (!found) {
-        printf("No hay citas programadas para este médico.\n");
-    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
 }
