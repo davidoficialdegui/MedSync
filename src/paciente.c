@@ -4,6 +4,7 @@
 #include <time.h>
 #include "paciente.h"
 #include <sqlite3.h>
+#include <sqlite3_stmt>
 
 // Función para validar si una cadena representa una fecha en formato dd/mm/yyyy
 int esFechaValida(const char *fecha) {
@@ -98,6 +99,39 @@ char* obtenerIdMedicoAleatorio() {
     sqlite3_close(db);
     return id_medico;
 }
+int idCitaExiste(const char *idCita) {
+    sqlite3 *db;
+    sqlite3_stmt *stmt;
+    int existe = 0; // 0 significa que no existe
+
+    if (sqlite3_open("hospital.db", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos.\n");
+        return 1; // Consideramos que existe en caso de error
+    }
+
+    const char *sql = "SELECT COUNT(*) FROM Cita_Medica WHERE Id_Cita = ?;";
+    
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, idCita, -1, SQLITE_STATIC);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            existe = sqlite3_column_int(stmt, 0) > 0;
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    
+    return existe; // Retorna 1 si existe, 0 si no existe
+}
+
+char *generarIdCita() {
+    static char id[10];
+    do {
+        sprintf(id, "CITA%04d", rand() % 10000);
+    } while (idCitaExiste(id)); // Verificar que no se repita en la BD
+    return id;
+}
 
 void registrarCita(const char *fecha, const char *motivo, const char *estado, const char *id_paciente) {
     char *id_medico = obtenerIdMedicoAleatorio();
@@ -173,9 +207,8 @@ void gestionarCitas() {
         printf("\nGESTION DE CITAS MEDICAS\n");
         printf("1. Coger cita\n");
         printf("2. Consultar citas programadas\n");
-        printf("3. Modificar una cita\n");
-        printf("4. Cancelar una cita\n");
-        printf("5. Salir\n");
+        printf("3. Cancelar una cita\n");
+        printf("4. Salir\n");
         printf("Elija una opcion: ");
         scanf("%d", &opcion);
 
@@ -202,21 +235,21 @@ void gestionarCitas() {
                     printf("Estado: ");
                     scanf("%s", estado);
                     printf("\nCita programada con motivo '%s' para la fecha '%s' con estado '%s'.\n", motivo, fecha, estado);
+                    registrarCita(fecha, motivo, estado, id_paciente);
                 }
                 break;
             case 2:
                 printf("\nConsultando citas programadas...\n");
-                // Aquí iría la lógica para mostrar citas programadas
+                consultarCitas();
                 break;
+
             case 3:
-                printf("\nModificando una cita...\n");
-                // Aquí iría la lógica para modificar una cita
+                printf("\nCancelando una cita...\n");
+                printf("\nIngrese el ID de la cita a cancelar: ");
+                scanf("%s", id_cita);
+                cancelarCita(id_cita);
                 break;
             case 4:
-                printf("\nCancelando una cita...\n");
-                // Aquí iría la lógica para cancelar una cita
-                break;
-            case 5:
                 return; // Salir de la gestión de citas
             default:
                 printf("Opcion no valida. Intente de nuevo.\n");
