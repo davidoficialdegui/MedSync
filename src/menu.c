@@ -36,6 +36,7 @@ void menuMedico(sqlite3 *db) {
 
 void menuPaciente(sqlite3 *db) {
     int opcion;
+    const char *id;
 
     while (1) {
         printf("\nMENU DE PACIENTE\n");
@@ -51,7 +52,9 @@ void menuPaciente(sqlite3 *db) {
                 gestionarCitas(db);
                 break;
             case 2:
-                consultarHistorial();
+                printf("ingrese el id del paciente:");
+                scanf("%c", &id);
+                consultarHistorial(id);
                 break;
             case 3:
                 atencionCliente(db);

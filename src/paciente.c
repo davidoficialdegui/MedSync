@@ -250,7 +250,7 @@ void gestionarCitas(sqlite3 *db, const char *idPaciente) {
             case 3:
                 printf("\nCancelando una cita...\n");
                 printf("\nIngrese el ID de la cita a cancelar: ");
-                char id_cita;
+                const char *id_cita;
                 scanf("%s", id_cita);
                 cancelarCita(id_cita);
                 break;
