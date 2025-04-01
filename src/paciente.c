@@ -91,6 +91,34 @@ void registrarCita(const char *fecha, const char *motivo, const char *estado, co
     sqlite3_close(db);
 }
 
+// Función para consultar citas
+void consultarCitas() {
+    sqlite3 *db = conectarBD();
+    if (!db) return;
+    
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT Id_Cita, Fecha_C, Motivo, Estado FROM Cita_Medica";
+    
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al consultar citas: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return;
+    }
+    
+    printf("\nCitas programadas:\n");
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        printf("ID: %s, Fecha: %s, Motivo: %s, Estado: %s\n", 
+            sqlite3_column_text(stmt, 0), 
+            sqlite3_column_text(stmt, 1), 
+            sqlite3_column_text(stmt, 2), 
+            sqlite3_column_text(stmt, 3));
+    }
+    
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+}
+
+
 void gestionarCitas() {
     int opcion;
 
