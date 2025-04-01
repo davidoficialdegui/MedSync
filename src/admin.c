@@ -5,20 +5,6 @@
 #include "bd.h"
 
 // metodos para paciente ----------------------------------
-void gestionarPacientes()
-{
-    printf("\n--- Gestion de Pacientes ---\n");
-    printf("1. Registrar nuevo paciente\n");
-    printf("2. Buscar paciente\n");
-    printf("3. Editar paciente\n");
-    printf("4. Eliminar paciente\n");
-    printf("5. Volver\n");
-    printf("Seleccione una opcion: ");
-
-    int opcion;
-    scanf("%d", &opcion);
-}
-
 void registrarNuevoPaciente(sqlite3 *db)
 {
     char sql[] = "INSERT INTO Paciente (Id_Paciente, DNI_P, Nombre_P, Email, Fecha_Ncto, Genero, Telefono_P, Direccion_P, Fecha_Reg) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
@@ -172,20 +158,42 @@ void EliminaPaciente(sqlite3 *db)
     sqlite3_finalize(stmt);
 }
 
-// metodos para empleado ------------------------------------------
-void gestionarEmpleados()
+void gestionarPacientes()
 {
-    printf("\n--- Gestion de Empleados ---\n");
-    printf("1. Registrar nuevo empleado\n");
-    printf("2. Buscar empleado\n");
-    printf("3. Editar empleado\n");
-    printf("4. Eliminar empleado\n");
-    printf("5. Volver\n");
-    printf("Seleccione una opcion: ");
 
-    int opcion;
-    scanf("%d", &opcion);
-}
+    do {
+
+        printf("\n--- Gestion de Pacientes ---\n");
+        printf("1. Registrar nuevo paciente\n");
+        printf("2. Buscar paciente\n");
+        printf("3. Editar paciente\n");
+        printf("4. Eliminar paciente\n");
+        printf("5. Volver\n");
+        printf("Seleccione una opcion: ");
+
+        int opcion;
+        scanf("%d", &opcion);
+
+        switch(opcion) {
+            case 1:
+                registrarNuevoPaciente();
+                break;
+            case 2:
+                BuscarPaciente();
+                break;
+            case 3:
+                EditarPaciente();
+                break;
+            case 4:
+                EliminaPaciente();
+                break;
+            case 5:
+                return;            
+        }
+    } while(opcion != 5); 
+} 
+
+// metodos para empleado ------------------------------------------
 
 void registrarNuevoEmpleado(sqlite3 *db)
 {
@@ -302,6 +310,43 @@ void EliminaEmpleado(sqlite3 *db)
     {
         printf("Empleado eliminado exitosamente.\n");
     }
+}
+
+void gestionarEmpleados()
+{
+
+    do {
+
+        printf("\n--- Gestion de Empleados ---\n");
+        printf("1. Registrar nuevo empleado\n");
+        printf("2. Buscar empleado\n");
+        printf("3. Editar empleado\n");
+        printf("4. Eliminar empleado\n");
+        printf("5. Volver\n");
+        printf("Seleccione una opcion: "); 
+
+        int opcion;
+        scanf("%d", &opcion);
+
+        switch(opcion) {
+            case 1:
+                registrarNuevoEmpleado();
+                break;
+            case 2:
+                BuscarEmpleado();
+                break;
+            case 3:
+                EditarEmpleado();
+                break;
+            case 4:
+                EliminaEmpleado();
+                break;
+            case 5:
+                return;            
+        }
+
+    } while (opcion <= 5);
+
 }
 
 // metodos para reporte -------------------------------
