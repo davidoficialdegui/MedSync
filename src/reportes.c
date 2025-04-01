@@ -73,4 +73,5 @@ void mostrarReporteHistoriales() {
                    reportes[i].id_reporte, reportes[i].descripcion, reportes[i].fecha_generacion);
         }
     }
-}
+} 
+ 
