@@ -19,13 +19,13 @@ void menuMedico(sqlite3 *db) {
         
         switch(opcion) {
             case 1:
-                gestionarCitasMedico(sqlite3 *db);
+                gestionarCitasMedico(db);
                 break;
             case 2:
-                consultarHistorialPaciente(sqlite3 *db);
+                consultarHistorialPaciente(db);
                 break;
             case 3:
-                atenderCita(sqlite3 *db);
+                atenderCita(db);
                 break;
             case 4:
                 printf("Cerrando sesión de médico...\n");
@@ -48,13 +48,13 @@ void menuPaciente(sqlite3 *db) {
 
         switch(opcion) {
             case 1:
-                gestionarCitas(sqlite3 *db);
+                gestionarCitas(db);
                 break;
             case 2:
-                consultarHistorial(sqlite3 *db);
+                consultarHistorial(db);
                 break;
             case 3:
-                atencionCliente(sqlite3 *db);
+                atencionCliente(db);
                 break;
             case 4:
                 printf("Saliendo...\n");
@@ -80,13 +80,13 @@ void menuAdministracion(sqlite3 *db) {
         
         switch(opcion) {
             case 1:
-                gestionarPacientes(sqlite3 *db);
+                gestionarPacientes(db);
                 break;
             case 2:
-                gestionarEmpleados(sqlite3 *db);
+                gestionarEmpleados(db);
                 break;
             case 3:
-                generarReportes(sqlite3 *db);
+                generarReportes(db);
                 break;
             case 4:
                 printf("Cerrando sesión de administrador...\n");

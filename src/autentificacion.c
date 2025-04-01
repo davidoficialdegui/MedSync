@@ -82,15 +82,15 @@ void autenticarYMostrarMensaje(const char *usuario, const char *contrasena, sqli
     switch (tipo) {
         case TIPO_MEDICO:
             printf("Autenticacion exitosa. Bienvenido, Dr. %s!\n", usuario);
-            menuMedico(sqlite3 *db);
+            menuMedico(db);
             break;
         case TIPO_PACIENTE:
             printf("Autenticacion exitosa. Bienvenido, paciente %s!\n", usuario);
-            menuPaciente(sqlite3 *db);
+            menuPaciente(db);
             break;
         case TIPO_ADMIN:
             printf("Autenticacion exitosa. Bienvenido, administrador %s!\n", usuario);
-            menuAdministracion(sqlite3 *db);
+            menuAdministracion(db);
             break;
         default:
             printf("Usuario o contrasena incorrectos.\n");

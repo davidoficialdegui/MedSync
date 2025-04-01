@@ -20,7 +20,7 @@ typedef struct
 Cita citas[MAX_CITAS];
 int totalCitas = 0;
 
-void agregarCita(int id_paciente, int id_medico, const char *fecha, const char *hora, const char *motivo, sqlite3 *db)
+void agregarCita(int id_paciente, int id_medico, const char *fecha, const char *hora, const char *motivo, )
 {
     if (totalCitas < MAX_CITAS)
     {

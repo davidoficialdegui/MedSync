@@ -176,16 +176,16 @@ void gestionarPacientes(sqlite3 *db)
         switch (opcion)
         {
         case 1:
-            registrarNuevoPaciente(sqlite3 *db);
+            registrarNuevoPaciente(db);
             break;
         case 2:
-            BuscarPaciente(sqlite3 *db);
+            BuscarPaciente(db);
             break;
         case 3:
-            EditarPaciente(sqlite3 *db);
+            EditarPaciente(db);
             break;
         case 4:
-            EliminaPaciente(sqlite3 *db);
+            EliminaPaciente(db);
             break;
         case 5:
             return;
@@ -332,16 +332,16 @@ void gestionarEmpleados(sqlite3 *db)
         switch (opcion)
         {
         case 1:
-            registrarNuevoEmpleado(sqlite3 *db);
+            registrarNuevoEmpleado(db);
             break;
         case 2:
-            BuscarEmpleado(sqlite3 *db);
+            BuscarEmpleado(db);
             break;
         case 3:
-            EditarEmpleado(sqlite3 *db);
+            EditarEmpleado(db);
             break;
         case 4:
-            EliminaEmpleado(sqlite3 *db);
+            EliminaEmpleado(db);
             break;
         case 5:
             return;
