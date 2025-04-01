@@ -4,8 +4,9 @@
 #include "medico.h"
 #include "paciente.h"
 #include "admin.h"
+#include "sqlite3.h"
 
-void menuMedico() {
+void menuMedico(sqlite3 *db) {
     int opcion;
     do {
         printf("\n--- Menu Medico ---\n");
@@ -18,13 +19,13 @@ void menuMedico() {
         
         switch(opcion) {
             case 1:
-                gestionarCitasMedico();
+                gestionarCitasMedico(sqlite3 *db);
                 break;
             case 2:
-                consultarHistorialPaciente();
+                consultarHistorialPaciente(sqlite3 *db);
                 break;
             case 3:
-                atenderCita();
+                atenderCita(sqlite3 *db);
                 break;
             case 4:
                 printf("Cerrando sesión de médico...\n");
@@ -33,7 +34,7 @@ void menuMedico() {
     } while(opcion != 4);
 }
 
-void menuPaciente() {
+void menuPaciente(sqlite3 *db) {
     int opcion;
 
     while (1) {
@@ -47,13 +48,13 @@ void menuPaciente() {
 
         switch(opcion) {
             case 1:
-                gestionarCitas();
+                gestionarCitas(sqlite3 *db);
                 break;
             case 2:
-                consultarHistorial();
+                consultarHistorial(sqlite3 *db);
                 break;
             case 3:
-                atencionCliente();
+                atencionCliente(sqlite3 *db);
                 break;
             case 4:
                 printf("Saliendo...\n");
@@ -66,7 +67,7 @@ void menuPaciente() {
 }
     
 
-void menuAdministracion() {
+void menuAdministracion(sqlite3 *db) {
     int opcion;
     do {
         printf("\n--- Menu Administrador ---\n");
@@ -79,13 +80,13 @@ void menuAdministracion() {
         
         switch(opcion) {
             case 1:
-                gestionarPacientes();
+                gestionarPacientes(sqlite3 *db);
                 break;
             case 2:
-                gestionarEmpleados();
+                gestionarEmpleados(sqlite3 *db);
                 break;
             case 3:
-                generarReportes();
+                generarReportes(sqlite3 *db);
                 break;
             case 4:
                 printf("Cerrando sesión de administrador...\n");

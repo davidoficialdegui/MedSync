@@ -157,7 +157,7 @@ void EliminaPaciente(sqlite3 *db)
     sqlite3_finalize(stmt);
 }
 
-void gestionarPacientes()
+void gestionarPacientes(sqlite3 *db)
 {
     int opcion;
 
@@ -176,16 +176,16 @@ void gestionarPacientes()
         switch (opcion)
         {
         case 1:
-            registrarNuevoPaciente();
+            registrarNuevoPaciente(sqlite3 *db);
             break;
         case 2:
-            BuscarPaciente();
+            BuscarPaciente(sqlite3 *db);
             break;
         case 3:
-            EditarPaciente();
+            EditarPaciente(sqlite3 *db);
             break;
         case 4:
-            EliminaPaciente();
+            EliminaPaciente(sqlite3 *db);
             break;
         case 5:
             return;
@@ -312,7 +312,7 @@ void EliminaEmpleado(sqlite3 *db)
     }
 }
 
-void gestionarEmpleados()
+void gestionarEmpleados(sqlite3 *db)
 {
     int opcion;
 
@@ -332,16 +332,16 @@ void gestionarEmpleados()
         switch (opcion)
         {
         case 1:
-            registrarNuevoEmpleado();
+            registrarNuevoEmpleado(sqlite3 *db);
             break;
         case 2:
-            BuscarEmpleado();
+            BuscarEmpleado(sqlite3 *db);
             break;
         case 3:
-            EditarEmpleado();
+            EditarEmpleado(sqlite3 *db);
             break;
         case 4:
-            EliminaEmpleado();
+            EliminaEmpleado(sqlite3 *db);
             break;
         case 5:
             return;
@@ -397,7 +397,7 @@ void ReporteMedicos(sqlite3 *db) {
     }
 }  
 
-void generarReportes()
+void generarReportes(sqlite3 *db)
 {
     printf("\n--- Generar Reportes ---\n");
     printf("1. Mostrar reportes de pacientes\n");

@@ -4,12 +4,13 @@
 #include "historialmedico.h"
 #include "paciente.h" 
 #include "medico.h" 
+#include "sqlite3.h"
 
 #define MAX_HISTORIALES 100
 HistorialMedico historialMedico[MAX_HISTORIALES];
 int totalHistoriares = 0;
 
-void registrarHistorial(int id_paciente, int id_medico, const char *diagnostico, const char *tratamiento, const char *observaciones) {
+void registrarHistorial(int id_paciente, int id_medico, const char *diagnostico, const char *tratamiento, const char *observaciones, sqlite3 *db) {
     if (totalHistoriares < MAX_HISTORIALES) {
         HistorialMedico nuevoHistorial;
         nuevoHistorial.id_historial = totalHistoriares + 1;
