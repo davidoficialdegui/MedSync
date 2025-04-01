@@ -240,7 +240,7 @@ void gestionarCitas(sqlite3 *db, const char *idPaciente) {
                     printf("Estado: ");
                     scanf("%s", estado);
                     printf("\nCita programada con motivo '%s' para la fecha '%s' con estado '%s'.\n", motivo, fecha, estado);
-                    registrarCita(fecha, motivo, estado, id_paciente);
+                    registrarCita(fecha, motivo, estado, idPaciente);
                 }
                 break;
             case 2:
@@ -262,8 +262,15 @@ void gestionarCitas(sqlite3 *db, const char *idPaciente) {
     }
 }
 
-void consultarHistorial() {
+void consultarHistorial(const char *id_paciente) {
+    sqlite3 *db;
+    sqlite3_stmt *stmt;
     int opcion;
+
+    if (sqlite3_open("clinica.db", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos: %s\n", sqlite3_errmsg(db));
+        return;
+    }
 
     while (1) {
         printf("\nCONSULTAR HISTORIAL MEDICO\n");
@@ -276,27 +283,48 @@ void consultarHistorial() {
         printf("Elija una opcion: ");
         scanf("%d", &opcion);
 
+        const char *sql = NULL;
         switch(opcion) {
             case 1:
-                printf("\nFecha de la cita: \n");
+            sql = "SELECT Cita_Medica.Fecha_C FROM Historial_Medico "
+            "JOIN Cita_Medica ON Historial_Medico.Id_Cita = Cita_Medica.Id_Cita "
+            "WHERE Historial_Medico.Id_Paciente = ?";
                 break;
             case 2:
                 printf("\nDiagnóstico: \n");
+                sql = "SELECT Diagnostico FROM Historial_Medico WHERE Id_Paciente = ?";
                 break;
             case 3:
                 printf("\nTratamiento: \n");
+                sql = "SELECT Tratamiento FROM Historial_Medico WHERE Id_Paciente = ?";
                 break;
             case 4:
                 printf("\nObservaciones: \n");
+                sql = "SELECT Observaciones FROM Historial_Medico WHERE Id_Paciente = ?";
                 break;
             case 5:
                 printf("\nMedico:\n");
+                sql = "SELECT Medico.Nombre FROM Historial_Medico "
+                "JOIN Medico ON Historial_Medico.Id_Medico = Medico.Id_Medico "
+                "WHERE Historial_Medico.Id_Paciente = ?";
                 break;
             case 6:
+                sqlite3_close(db);
                 return; // Salir de la consulta del historial médico
             default:
                 printf("Opcion no valida. Intente de nuevo.\n");
+                continue;
         }
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, id_paciente, -1, SQLITE_STATIC);
+            
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                printf("%s\n", sqlite3_column_text(stmt, 0));
+            }
+        } else {
+            printf("Error al ejecutar la consulta: %s\n", sqlite3_errmsg(db));
+        }
+        sqlite3_finalize(stmt);
     }
 }
 
