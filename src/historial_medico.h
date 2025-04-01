@@ -1,7 +1,7 @@
 #ifndef HISTORIALMEDICO_H
 #define HISTORIALMEDICO_H
 
-#include <sqlite3.h>
+#include "sqlite.h"
 
 typedef struct {
     int Id_Hospital;       

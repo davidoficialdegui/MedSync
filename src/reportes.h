@@ -1,7 +1,7 @@
 #ifndef REPORTES_H
 #define REPORTES_H
 
-#include <sqlite3.h>
+#include "sqlite3.h"
 #include <time.h>
 
 #define MAX_REPORTES 100

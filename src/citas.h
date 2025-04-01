@@ -1,7 +1,7 @@
 #ifndef CITAS_H
 #define CITAS_H
 
-#include <sqlite3.h>
+#include "sqlite3.h"
 
 typedef struct {
     int Id_Cita;
