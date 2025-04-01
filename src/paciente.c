@@ -75,6 +75,22 @@ sqlite3* conectarBD() {
     return db;
 }
 
+void registrarCita(const char *fecha, const char *motivo, const char *estado, const char *id_paciente, const char *id_medico) {
+    sqlite3 *db = conectarBD();
+    if (!db) return;
+
+    char sql[512];
+    sprintf(sql, "INSERT INTO Cita_Medica (Id_Cita, Fecha_C, Motivo, Estado, Id_Paciente, Id_Medico) VALUES (NULL, '%s', '%s', '%s', '%s', '%s');", fecha, motivo, estado, id_paciente, id_medico);
+    
+    if (sqlite3_exec(db, sql, 0, 0, NULL) != SQLITE_OK) {
+        printf("Error al registrar la cita: %s\n", sqlite3_errmsg(db));
+    } else {
+        printf("Cita registrada con éxito.\n");
+    }
+    
+    sqlite3_close(db);
+}
+
 void gestionarCitas() {
     int opcion;
 
