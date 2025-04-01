@@ -12,15 +12,15 @@ void registrarMedico(sqlite3 *db) {
     printf("\n--- Registrar Nuevo Médico ---\n");
     
     printf("ID Médico: ");
-    scanf("%s", nuevo.Id_Medico);
+    scanf("%49s", nuevo.Id_Medico); // Limita la entrada a 49 caracteres
     printf("Nombre: ");
-    scanf(" [^\n]", nuevo.Nombre_M);
+    fgets(nuevo.Nombre_M, sizeof(nuevo.Nombre_M), stdin);
     printf("DNI: ");
     scanf("%s", nuevo.DNI_M);
     printf("Teléfono: ");
     scanf("%s", nuevo.Telefono_M);
     printf("Especialidad: ");
-    scanf(" [^\n]", nuevo.Especialidad);
+    fgets(nuevo.Especialidad, sizeof(nuevo.Especialidad), stdin);
 
     if(sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
         fprintf(stderr, "Error preparando la consulta: %s\n", sqlite3_errmsg(db));
@@ -39,7 +39,9 @@ void registrarMedico(sqlite3 *db) {
         printf("\nMédico registrado con éxito\n");
     }
 
-    sqlite3_finalize(stmt);
+    if (stmt) {
+        sqlite3_finalize(stmt);
+    }
 }
 
 void buscarMedico(sqlite3 *db) {
@@ -61,7 +63,11 @@ void buscarMedico(sqlite3 *db) {
     if(sqlite3_step(stmt) == SQLITE_ROW) {
         printf("\nMédico encontrado:\n");
         printf("ID: %s\n", sqlite3_column_text(stmt, 0));
-        printf("Nombre: %s\n", sqlite3_column_text(stmt, 1));
+        const char *nombre = (const char *)sqlite3_column_text(stmt, 1);
+        if (nombre == NULL) {
+            nombre = "N/A"; // Valor predeterminado si es NULL
+        }
+        printf("Nombre: %s\n", nombre);
         printf("DNI: %s\n", sqlite3_column_text(stmt, 2));
         printf("Teléfono: %s\n", sqlite3_column_text(stmt, 3));
         printf("Especialidad: %s\n", sqlite3_column_text(stmt, 4));
@@ -69,7 +75,9 @@ void buscarMedico(sqlite3 *db) {
         printf("\nNo se encontró médico con ID: %s\n", id);
     }
 
-    sqlite3_finalize(stmt);
+    if (stmt) {
+        sqlite3_finalize(stmt);
+    }
 }
 
 void editarMedico(sqlite3 *db) {
@@ -93,22 +101,26 @@ void editarMedico(sqlite3 *db) {
 
     if(sqlite3_step(stmt) != SQLITE_ROW) {
         printf("\nMédico no encontrado\n");
-        sqlite3_finalize(stmt);
+        if (stmt) {
+            sqlite3_finalize(stmt);
+        }
         return;
     }
 
     // Mostrar y editar datos
     printf("\nDatos actuales:\n");
     printf("Nombre [%s]: ", sqlite3_column_text(stmt, 1));
-    scanf(" [^\n]", med.Nombre_M);
+    fgets(med.Nombre_M, sizeof(med.Nombre_M), stdin);
     printf("DNI [%s]: ", sqlite3_column_text(stmt, 2));
     scanf("%s", med.DNI_M);
     printf("Teléfono [%s]: ", sqlite3_column_text(stmt, 3));
     scanf("%s", med.Telefono_M);
     printf("Especialidad [%s]: ", sqlite3_column_text(stmt, 4));
-    scanf(" [^\n]", med.Especialidad);
+    fgets(med.Especialidad, sizeof(med.Especialidad), stdin);
 
-    sqlite3_finalize(stmt);
+    if (stmt) {
+        sqlite3_finalize(stmt);
+    }
 
     // Actualizar
     if(sqlite3_prepare_v2(db, sql_update, -1, &stmt, NULL) != SQLITE_OK) {
@@ -128,7 +140,9 @@ void editarMedico(sqlite3 *db) {
         printf("\nMédico actualizado con éxito\n");
     }
 
-    sqlite3_finalize(stmt);
+    if (stmt) {
+        sqlite3_finalize(stmt);
+    }
 }
 
 void eliminarMedico(sqlite3 *db) {
@@ -162,7 +176,9 @@ void eliminarMedico(sqlite3 *db) {
         printf("\nMédico eliminado con éxito\n");
     }
 
-    sqlite3_finalize(stmt);
+    if (stmt) {
+        sqlite3_finalize(stmt);
+    }
 }
 
 void listarMedicos(sqlite3 *db) {
@@ -195,7 +211,9 @@ void listarMedicos(sqlite3 *db) {
         fprintf(stderr, "Error leyendo datos: %s\n", sqlite3_errmsg(db));
     }
 
-    sqlite3_finalize(stmt);
+    if (stmt) {
+        sqlite3_finalize(stmt);
+    }
 }
 
 void gestionarCitasMedico(sqlite3 *db, const char* id_medico) {
@@ -236,7 +254,9 @@ void gestionarCitasMedico(sqlite3 *db, const char* id_medico) {
                            sqlite3_column_text(stmt, 4));
                 }
                 
-                sqlite3_finalize(stmt);
+                if (stmt) {
+                    sqlite3_finalize(stmt);
+                }
                 break;
             }
             case 2: {
@@ -261,7 +281,9 @@ void gestionarCitasMedico(sqlite3 *db, const char* id_medico) {
                     printf("Cita cancelada con éxito\n");
                 }
                 
-                sqlite3_finalize(stmt);
+                if (stmt) {
+                    sqlite3_finalize(stmt);
+                }
                 break;
             }
             case 3: {
@@ -277,7 +299,7 @@ void gestionarCitasMedico(sqlite3 *db, const char* id_medico) {
                 printf("Hora (HH:MM): ");
                 scanf("%s", hora);
                 printf("Motivo: ");
-                scanf(" [^\n]", motivo);
+                fgets(motivo, sizeof(motivo), stdin);
                 
                 if(sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
                     fprintf(stderr, "Error preparando consulta: %s\n", sqlite3_errmsg(db));
@@ -296,7 +318,9 @@ void gestionarCitasMedico(sqlite3 *db, const char* id_medico) {
                     printf("Cita programada con éxito\n");
                 }
                 
-                sqlite3_finalize(stmt);
+                if (stmt) {
+                    sqlite3_finalize(stmt);
+                }
                 break;
             }
         }
@@ -345,7 +369,9 @@ void consultarHistorialPaciente(sqlite3 *db) {
         printf("No se encontró historial para este paciente\n");
     }
 
-    sqlite3_finalize(stmt);
+    if (stmt) {
+        sqlite3_finalize(stmt);
+    }
 }
 
 void atenderCita(sqlite3 *db, const char* id_medico) {
@@ -376,7 +402,9 @@ void atenderCita(sqlite3 *db, const char* id_medico) {
 
     if(sqlite3_step(stmt) != SQLITE_ROW) {
         printf("Cita no encontrada o ya atendida\n");
-        sqlite3_finalize(stmt);
+        if (stmt) {
+            sqlite3_finalize(stmt);
+        }
         return;
     }
 
@@ -387,14 +415,17 @@ void atenderCita(sqlite3 *db, const char* id_medico) {
     printf("Hora: %s\n", sqlite3_column_text(stmt, 3));
     printf("Motivo: %s\n", sqlite3_column_text(stmt, 4));
 
-    strcpy(id_paciente, (const char*)sqlite3_column_text(stmt, 1));
-    sqlite3_finalize(stmt);
+    strncpy(id_paciente, (const char *)sqlite3_column_text(stmt, 1), sizeof(id_paciente) - 1);
+    id_paciente[sizeof(id_paciente) - 1] = '\0'; // Asegura la terminación nula
+    if (stmt) {
+        sqlite3_finalize(stmt);
+    }
 
     // Registrar diagnóstico y tratamiento
     printf("\nDiagnóstico: ");
-    scanf(" [^\n]", diagnostico);
+    fgets(diagnostico, sizeof(diagnostico), stdin);
     printf("Tratamiento prescrito: ");
-    scanf(" [^\n]", tratamiento);
+    fgets(tratamiento, sizeof(tratamiento), stdin);
 
     // Actualizar estado 
     if(sqlite3_prepare_v2(db, sql_update, -1, &stmt, NULL) != SQLITE_OK) {
@@ -406,11 +437,15 @@ void atenderCita(sqlite3 *db, const char* id_medico) {
 
     if(sqlite3_step(stmt) != SQLITE_DONE) {
         fprintf(stderr, "Error actualizando cita: %s\n", sqlite3_errmsg(db));
-        sqlite3_finalize(stmt);
+        if (stmt) {
+            sqlite3_finalize(stmt);
+        }
         return;
     }
 
-    sqlite3_finalize(stmt);
+    if (stmt) {
+        sqlite3_finalize(stmt);
+    }
 
     // Registrar en historial médico
     if(sqlite3_prepare_v2(db, sql_insert, -1, &stmt, NULL) != SQLITE_OK) {
@@ -429,5 +464,7 @@ void atenderCita(sqlite3 *db, const char* id_medico) {
         printf("\nAtención registrada con éxito en el historial médico\n");
     }
 
-    sqlite3_finalize(stmt);
+    if (stmt) {
+        sqlite3_finalize(stmt);
+    }
 }
