@@ -118,6 +118,22 @@ void consultarCitas() {
     sqlite3_close(db);
 }
 
+// Función para cancelar una cita
+void cancelarCita(const char *id_cita) {
+    sqlite3 *db = conectarBD();
+    if (!db) return;
+
+    char sql[256];
+    sprintf(sql, "DELETE FROM Cita_Medica WHERE Id_Cita = '%s';", id_cita);
+    
+    if (sqlite3_exec(db, sql, 0, 0, NULL) != SQLITE_OK) {
+        printf("Error al cancelar la cita: %s\n", sqlite3_errmsg(db));
+    } else {
+        printf("Cita cancelada con éxito.\n");
+    }
+    
+    sqlite3_close(db);
+}
 
 void gestionarCitas() {
     int opcion;
