@@ -28,5 +28,8 @@ void EliminaEmpleado();
 
 // metodos para reporte
 void generarReportes();
+void reportePacientes();
+void reporteEmpleados();
+void reporteMedicos();
 
 #endif

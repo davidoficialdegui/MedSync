@@ -355,9 +355,9 @@ void gestionarEmpleados()
 void generarReportes()
 {
     printf("\n--- Generar Reportes ---\n");
-    printf("1. Reporte de pacientes registrados\n");
-    printf("2. Reporte de empleados activos\n");
-    printf("3. Reporte de citas programadas\n");
+    printf("1. Mostrar reportes de pacientes\n");
+    printf("2. Mostrar reportes de empleados\n");
+    printf("3. Mostrar reportes de medicos\n");
     printf("4. Volver\n");
     printf("Seleccione una opcion: ");
 
