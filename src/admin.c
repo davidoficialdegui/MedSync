@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sqlite3.h>
+#include "sqlite3.h" 
 #include "admin.h"
-#include "bd.h"
 
 // metodos para paciente ----------------------------------
 void registrarNuevoPaciente(sqlite3 *db)
@@ -158,11 +157,12 @@ void EliminaPaciente(sqlite3 *db)
     sqlite3_finalize(stmt);
 }
 
-void gestionarPacientes()
+void gestionarPacientes(sqlite3 *db)
 {
+    int opcion;
 
-    do {
-
+    do
+    {
         printf("\n--- Gestion de Pacientes ---\n");
         printf("1. Registrar nuevo paciente\n");
         printf("2. Buscar paciente\n");
@@ -171,27 +171,27 @@ void gestionarPacientes()
         printf("5. Volver\n");
         printf("Seleccione una opcion: ");
 
-        int opcion;
         scanf("%d", &opcion);
 
-        switch(opcion) {
-            case 1:
-                registrarNuevoPaciente();
-                break;
-            case 2:
-                BuscarPaciente();
-                break;
-            case 3:
-                EditarPaciente();
-                break;
-            case 4:
-                EliminaPaciente();
-                break;
-            case 5:
-                return;            
+        switch (opcion)
+        {
+        case 1:
+            registrarNuevoPaciente(db);
+            break;
+        case 2:
+            BuscarPaciente(db);
+            break;
+        case 3:
+            EditarPaciente(db);
+            break;
+        case 4:
+            EliminaPaciente(db);
+            break;
+        case 5:
+            return;
         }
-    } while(opcion != 5); 
-} 
+    } while (opcion != 5);
+}
 
 // metodos para empleado ------------------------------------------
 
@@ -312,10 +312,12 @@ void EliminaEmpleado(sqlite3 *db)
     }
 }
 
-void gestionarEmpleados()
+void gestionarEmpleados(sqlite3 *db)
 {
+    int opcion;
 
-    do {
+    do
+    {
 
         printf("\n--- Gestion de Empleados ---\n");
         printf("1. Registrar nuevo empleado\n");
@@ -323,39 +325,84 @@ void gestionarEmpleados()
         printf("3. Editar empleado\n");
         printf("4. Eliminar empleado\n");
         printf("5. Volver\n");
-        printf("Seleccione una opcion: "); 
+        printf("Seleccione una opcion: ");
 
-        int opcion;
         scanf("%d", &opcion);
 
-        switch(opcion) {
-            case 1:
-                registrarNuevoEmpleado();
-                break;
-            case 2:
-                BuscarEmpleado();
-                break;
-            case 3:
-                EditarEmpleado();
-                break;
-            case 4:
-                EliminaEmpleado();
-                break;
-            case 5:
-                return;            
+        switch (opcion)
+        {
+        case 1:
+            registrarNuevoEmpleado(db);
+            break;
+        case 2:
+            BuscarEmpleado(db);
+            break;
+        case 3:
+            EditarEmpleado(db);
+            break;
+        case 4:
+            EliminaEmpleado(db);
+            break;
+        case 5:
+            return;
         }
 
-    } while (opcion <= 5);
-
+    } while (opcion != 5);
 }
 
 // metodos para reporte -------------------------------
-void generarReportes()
+
+void ReportePacientes(sqlite3 *db) {
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT Id_Reporte, Descripcion, Fecha_R FROM Reporte WHERE Id_Paciente IS NOT NULL";
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) == SQLITE_OK) {
+        printf("\nReportes realizados por Pacientes:\n");
+        printf("ID Reporte | Descripción | Fecha Reporte\n");
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            printf("%s | %s | %s\n",
+                   sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1),
+                   sqlite3_column_text(stmt, 2));
+        }
+        sqlite3_finalize(stmt);
+    }
+}
+
+void ReporteEmpleados(sqlite3 *db) {
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT Id_Reporte, Descripcion, Fecha_R FROM Reporte WHERE Id_Empleado IS NOT NULL";
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) == SQLITE_OK) {
+        printf("\nReportes realizados por Empleados:\n");
+        printf("ID Reporte | Descripción | Fecha Reporte\n");
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            printf("%s | %s | %s\n",
+                   sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1),
+                   sqlite3_column_text(stmt, 2));
+        }
+        sqlite3_finalize(stmt);
+    }
+}
+
+void ReporteMedicos(sqlite3 *db) {
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT Id_Reporte, Descripcion, Fecha_R FROM Reporte WHERE Id_Medico IS NOT NULL";
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) == SQLITE_OK) {
+        printf("\nReportes realizados por Médicos:\n");
+        printf("ID Reporte | Descripción | Fecha Reporte\n");
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            printf("%s | %s | %s\n",
+                   sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1),
+                   sqlite3_column_text(stmt, 2));
+        }
+        sqlite3_finalize(stmt);
+    }
+}  
+
+void generarReportes(sqlite3 *db)
 {
     printf("\n--- Generar Reportes ---\n");
-    printf("1. Reporte de pacientes registrados\n");
-    printf("2. Reporte de empleados activos\n");
-    printf("3. Reporte de citas programadas\n");
+    printf("1. Mostrar reportes de pacientes\n");
+    printf("2. Mostrar reportes de empleados\n");
+    printf("3. Mostrar reportes de medicos\n");
     printf("4. Volver\n");
     printf("Seleccione una opcion: ");
 

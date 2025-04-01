@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sqlite3.h>
+#include "sqlite3.h"
 #include "medico.h"
-#include "bd.h"
 
 void registrarMedico(sqlite3 *db) {
     medico nuevo;
