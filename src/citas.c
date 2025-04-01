@@ -15,7 +15,7 @@ void agregarCita(int id_paciente, int id_medico, const char *fecha, const char *
     }
 
     char sql[512];
-    snprintf(sql, sizeof(sql), "INSERT INTO Citas (Fecha_C, Motivo, Estado, Id_Paciente, Id_Medico) VALUES ('%s %s', '%s', 'Programada', %d, %d);", fecha, hora, motivo, id_paciente, id_medico);
+    snprintf(sql, sizeof(sql), "INSERT INTO Cita_Medica (Fecha_C, Motivo, Estado, Id_Paciente, Id_Medico) VALUES ('%s %s', '%s', 'Programada', %d, %d);", fecha, hora, motivo, id_paciente, id_medico);
 
     rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
     if (rc != SQLITE_OK) {
@@ -37,7 +37,7 @@ void modificarCita(int id_cita, const char *nueva_fecha, const char *nueva_hora,
     }
 
     char sql[512];
-    snprintf(sql, sizeof(sql), "UPDATE Citas SET Fecha_C='%s %s', Motivo='%s' WHERE Id_Cita=%d;", nueva_fecha, nueva_hora, nuevo_motivo, id_cita);
+    snprintf(sql, sizeof(sql), "UPDATE Cita_Medica SET Fecha_C='%s %s', Motivo='%s' WHERE Id_Cita=%d;", nueva_fecha, nueva_hora, nuevo_motivo, id_cita);
 
     rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
     if (rc != SQLITE_OK) {
@@ -59,7 +59,7 @@ void cancelarCita(int id_cita) {
     }
 
     char sql[128];
-    snprintf(sql, sizeof(sql), "UPDATE Citas SET Estado='Cancelada' WHERE Id_Cita=%d;", id_cita);
+    snprintf(sql, sizeof(sql), "UPDATE Cita_Medica SET Estado='Cancelada' WHERE Id_Cita=%d;", id_cita);
 
     rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
     if (rc != SQLITE_OK) {
@@ -81,7 +81,7 @@ void listarCitasPaciente(int id_paciente) {
     }
 
     char sql[128];
-    snprintf(sql, sizeof(sql), "SELECT Id_Cita, Fecha_C, Motivo, Estado FROM Citas WHERE Id_Paciente=%d;", id_paciente);
+    snprintf(sql, sizeof(sql), "SELECT Id_Cita, Fecha_C, Motivo, Estado FROM Cita_Medica WHERE Id_Paciente=%d;", id_paciente);
 
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
     if (rc != SQLITE_OK) {
@@ -113,7 +113,7 @@ void listarCitasMedico(int id_medico) {
     }
 
     char sql[128];
-    snprintf(sql, sizeof(sql), "SELECT Id_Cita, Id_Paciente, Fecha_C, Estado FROM Citas WHERE Id_Medico=%d;", id_medico);
+    snprintf(sql, sizeof(sql), "SELECT Id_Cita, Id_Paciente, Fecha_C, Estado FROM Cita_Medica WHERE Id_Medico=%d;", id_medico);
 
     rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
     if (rc != SQLITE_OK) {
