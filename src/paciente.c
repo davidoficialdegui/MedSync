@@ -75,7 +75,37 @@ sqlite3* conectarBD() {
     return db;
 }
 
-void registrarCita(const char *fecha, const char *motivo, const char *estado, const char *id_paciente, const char *id_medico) {
+// Función para obtener un ID de médico aleatorio
+char* obtenerIdMedicoAleatorio() {
+    sqlite3 *db = conectarBD();
+    if (!db) return NULL;
+    
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT Id_Medico FROM Medico ORDER BY RANDOM() LIMIT 1";
+    
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al obtener ID de médico: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return NULL;
+    }
+    
+    char *id_medico = NULL;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        id_medico = strdup((const char*)sqlite3_column_text(stmt, 0));
+    }
+    
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    return id_medico;
+}
+
+void registrarCita(const char *fecha, const char *motivo, const char *estado, const char *id_paciente) {
+    char *id_medico = obtenerIdMedicoAleatorio();
+    if (!id_medico) {
+        printf("No se pudo asignar un médico.\n");
+        return;
+    }
+    
     sqlite3 *db = conectarBD();
     if (!db) return;
 
@@ -134,29 +164,7 @@ void cancelarCita(const char *id_cita) {
     
     sqlite3_close(db);
 }
-// Función para obtener un ID de médico aleatorio
-char* obtenerIdMedicoAleatorio() {
-    sqlite3 *db = conectarBD();
-    if (!db) return NULL;
-    
-    sqlite3_stmt *stmt;
-    const char *sql = "SELECT Id_Medico FROM Medico ORDER BY RANDOM() LIMIT 1";
-    
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
-        printf("Error al obtener ID de médico: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        return NULL;
-    }
-    
-    char *id_medico = NULL;
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
-        id_medico = strdup((const char*)sqlite3_column_text(stmt, 0));
-    }
-    
-    sqlite3_finalize(stmt);
-    sqlite3_close(db);
-    return id_medico;
-}
+
 
 void gestionarCitas() {
     int opcion;
