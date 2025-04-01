@@ -51,7 +51,7 @@ void menuPaciente(sqlite3 *db) {
                 gestionarCitas(db);
                 break;
             case 2:
-                consultarHistorial(db);
+                consultarHistorial();
                 break;
             case 3:
                 atencionCliente(db);
