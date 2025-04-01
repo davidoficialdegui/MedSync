@@ -357,31 +357,49 @@ void registrarReporte(const char *descripcion, const char *fecha, const char *id
 
     sqlite3_close(db);
 }
-    void atencionCliente() {
-        char descripcion[200];
-        char fecha[20];
-    
-        // la descripción del problema
-        printf("\nDescripcion del problema: ");
-        getchar();  // Limpiar el buffer de entrada
-        fgets(descripcion, sizeof(descripcion), stdin);  // Leer la descripción completa
-    
-        // Validación de la fecha
-         // Validación de la fecha
-        while (1) {
-            printf("Fecha de la consulta (formato: dd/mm/yyyy): ");
-            scanf("%s", fecha);
+ // Función para atender al cliente y registrar un reporte
+void atencionCliente() {
+    char descripcion[200];
+    char fecha[20];
+    char id_paciente[20];
+    char id_empleado[20];
+    char id_medico[20];
 
-            // Validar si la fecha es correcta y futura
-            int dia, mes, anio;
-            if (sscanf(fecha, "%d/%d/%d", &dia, &mes, &anio) == 3 && esFechaValida(fecha) && esFechaFutura(dia, mes, anio)) {
-                break; // Si la fecha es válida y futura, salimos del ciclo
-            } else {
-                printf("Fecha inválida o pasada. Por favor, ingresa una fecha válida en el futuro (dd/mm/yyyy).\n");
-            }
+    // La descripción del problema
+    printf("\nDescripción del problema: ");
+    getchar();  // Limpiar el buffer de entrada
+    fgets(descripcion, sizeof(descripcion), stdin);  // Leer la descripción completa
+    descripcion[strcspn(descripcion, "\n")] = 0;  // Eliminar el salto de línea al final
+
+    // Validación de la fecha
+    while (1) {
+        printf("Fecha de la consulta (formato: dd/mm/yyyy): ");
+        scanf("%s", fecha);
+
+        // Validar si la fecha es correcta y futura
+        int dia, mes, anio;
+        if (sscanf(fecha, "%d/%d/%d", &dia, &mes, &anio) == 3 && esFechaValida(fecha) && esFechaFutura(dia, mes, anio)) {
+            break; // Si la fecha es válida y futura, salimos del ciclo
+        } else {
+            printf("Fecha inválida o pasada. Por favor, ingresa una fecha válida en el futuro (dd/mm/yyyy).\n");
         }
-    
-        // Mostrar la información ingresada
-        printf("\nDescripcion registrada: %s", descripcion);
-        printf("Fecha de consulta registrada: %s\n", fecha);
     }
+
+    // Solicitar ID del paciente, empleado y médico
+    printf("Ingrese el ID del paciente: ");
+    scanf("%s", id_paciente);
+    printf("Ingrese el ID del empleado: ");
+    scanf("%s", id_empleado);
+    printf("Ingrese el ID del médico: ");
+    scanf("%s", id_medico);
+
+    // Registrar el reporte en la base de datos
+    registrarReporte(descripcion, fecha, id_paciente, id_empleado, id_medico);
+
+    // Mostrar la información registrada
+    printf("\nDescripción registrada: %s\n", descripcion);
+    printf("Fecha de consulta registrada: %s\n", fecha);
+    printf("ID del paciente: %s\n", id_paciente);
+    printf("ID del empleado: %s\n", id_empleado);
+    printf("ID del médico: %s\n", id_medico);
+}
