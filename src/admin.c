@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sqlite3.h>
+#include "sqlite3.h" 
 #include "admin.h"
-#include "bd.h"
 
 // metodos para paciente ----------------------------------
 void registrarNuevoPaciente(sqlite3 *db)

@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include "string.h"
 #include "citas.h"
-#include "bd.h"
 
 void solicitarCita(int id_paciente) {
     printf("\n--- Solicitar Nueva Cita ---\n");

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "autentificacion.h"
-#include "bd.h"
 
 /*void mostrar_menu_principal() {
     printf("\n=== MedSync - Sistema de Gestion Hospitalaria ===\n");

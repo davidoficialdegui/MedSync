@@ -1,7 +1,7 @@
 #ifndef MEDICO_H
 #define MEDICO_H
 
-#include <sqlite3.h>
+#include "sqlite3.h"
 
 typedef struct {
     char Id_Medico[50];
