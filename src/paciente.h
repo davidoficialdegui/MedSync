@@ -1,7 +1,9 @@
+#include "sqlite3.h"
 #ifndef PACIENTE_H
 #define PACIENTE_H
 
 #include "sqlite3.h"
+
 
 typedef struct 
 {  
