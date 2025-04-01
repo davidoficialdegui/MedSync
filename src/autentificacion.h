@@ -1,3 +1,5 @@
+#include "sqlite3.h"
+
 #ifndef AUTENTIFICACION_H
 #define AUTENTIFICACION_H
 
@@ -16,7 +18,7 @@ typedef enum {
 
 TipoUsuario autentificarUsuario(const char *usuario, const char *contrasena);
 
-void autenticarYMostrarMensaje(const char *usuario, const char *contrasena);
+void autenticarYMostrarMensaje(const char *usuario, const char *contrasena, sqlite3 *db);
 
 // Nueva función para registrar el inicio de sesión
 void registrarInicioSesion(const char *usuario);

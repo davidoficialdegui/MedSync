@@ -3,8 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include "paciente.h"
-#include <sqlite3.h>
-#include <sqlite3_stmt>
+#include "sqlite3.h"
 
 // Función para validar si una cadena representa una fecha en formato dd/mm/yyyy
 int esFechaValida(const char *fecha) {

@@ -3,6 +3,7 @@
 #include "autentificacion.h"
 #include "menu.h"
 #include <time.h>
+#include "sqlite3.h"
 
 // Función para obtener la fecha y hora actual
 void obtenerFechaHora(char *fechaHora) {
@@ -70,7 +71,7 @@ TipoUsuario autentificarUsuario(const char *usuario, const char *contrasena) {
     return TIPO_DESCONOCIDO;
 }
 
-void autenticarYMostrarMensaje(const char *usuario, const char *contrasena) {
+void autenticarYMostrarMensaje(const char *usuario, const char *contrasena, sqlite3 *db) {
     TipoUsuario tipo = autentificarUsuario(usuario, contrasena);
     
     // Si la autenticación es exitosa, registramos el log
@@ -81,15 +82,15 @@ void autenticarYMostrarMensaje(const char *usuario, const char *contrasena) {
     switch (tipo) {
         case TIPO_MEDICO:
             printf("Autenticacion exitosa. Bienvenido, Dr. %s!\n", usuario);
-            menuMedico();
+            menuMedico(db);
             break;
         case TIPO_PACIENTE:
             printf("Autenticacion exitosa. Bienvenido, paciente %s!\n", usuario);
-            menuPaciente();
+            menuPaciente(db);
             break;
         case TIPO_ADMIN:
             printf("Autenticacion exitosa. Bienvenido, administrador %s!\n", usuario);
-            menuAdministracion();
+            menuAdministracion(db);
             break;
         default:
             printf("Usuario o contrasena incorrectos.\n");
