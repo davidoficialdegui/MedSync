@@ -8,6 +8,7 @@
 
 void menuMedico(sqlite3 *db) {
     int opcion;
+    const char *id_medico;
     do {
         printf("\n--- Menu Medico ---\n");
         printf("1. Gestion de citas\n");
@@ -19,13 +20,15 @@ void menuMedico(sqlite3 *db) {
         
         switch(opcion) {
             case 1:
-                gestionarCitasMedico(db);
+             printf("inserte el id del medico: ");
+             scanf("%c", &id_medico);
+                gestionarCitasMedico(db, id_medico);
                 break;
             case 2:
                 consultarHistorialPaciente(db);
                 break;
             case 3:
-                atenderCita(db);
+                atenderCita(db, id_medico);
                 break;
             case 4:
                 printf("Cerrando sesión de médico...\n");
