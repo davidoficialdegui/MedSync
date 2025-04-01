@@ -3,6 +3,8 @@
 #include <string.h>
 #include <time.h>
 #include "paciente.h"
+#include <sqlite3.h>
+#include <sqlite3_stmt>
 
 // Función para validar si una cadena representa una fecha en formato dd/mm/yyyy
 int esFechaValida(const char *fecha) {
@@ -64,6 +66,139 @@ int esFechaFutura(int diaCita, int mesCita, int anioCita) {
 
     return 0; // La cita es en el pasado o en el presente
 }
+// Función para conectar a la base de datos
+sqlite3* conectarBD() {
+    sqlite3 *db;
+    if (sqlite3_open("clinica.db", &db)) {
+        printf("Error al abrir la base de datos: %s\n", sqlite3_errmsg(db));
+        return NULL;
+    }
+    return db;
+}
+
+// Función para obtener un ID de médico aleatorio
+char* obtenerIdMedicoAleatorio() {
+    sqlite3 *db = conectarBD();
+    if (!db) return NULL;
+    
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT Id_Medico FROM Medico ORDER BY RANDOM() LIMIT 1";
+    
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al obtener ID de médico: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return NULL;
+    }
+    
+    char *id_medico = NULL;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        id_medico = strdup((const char*)sqlite3_column_text(stmt, 0));
+    }
+    
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    return id_medico;
+}
+int idCitaExiste(const char *idCita) {
+    sqlite3 *db;
+    sqlite3_stmt *stmt;
+    int existe = 0; // 0 significa que no existe
+
+    if (sqlite3_open("hospital.db", &db) != SQLITE_OK) {
+        printf("Error al abrir la base de datos.\n");
+        return 1; // Consideramos que existe en caso de error
+    }
+
+    const char *sql = "SELECT COUNT(*) FROM Cita_Medica WHERE Id_Cita = ?;";
+    
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, idCita, -1, SQLITE_STATIC);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            existe = sqlite3_column_int(stmt, 0) > 0;
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    
+    return existe; // Retorna 1 si existe, 0 si no existe
+}
+
+char *generarIdCita() {
+    static char id[10];
+    do {
+        sprintf(id, "CITA%04d", rand() % 10000);
+    } while (idCitaExiste(id)); // Verificar que no se repita en la BD
+    return id;
+}
+
+void registrarCita(const char *fecha, const char *motivo, const char *estado, const char *id_paciente) {
+    char *id_medico = obtenerIdMedicoAleatorio();
+    if (!id_medico) {
+        printf("No se pudo asignar un médico.\n");
+        return;
+    }
+    
+    sqlite3 *db = conectarBD();
+    if (!db) return;
+
+    char sql[512];
+    sprintf(sql, "INSERT INTO Cita_Medica (Id_Cita, Fecha_C, Motivo, Estado, Id_Paciente, Id_Medico) VALUES (NULL, '%s', '%s', '%s', '%s', '%s');", fecha, motivo, estado, id_paciente, id_medico);
+    
+    if (sqlite3_exec(db, sql, 0, 0, NULL) != SQLITE_OK) {
+        printf("Error al registrar la cita: %s\n", sqlite3_errmsg(db));
+    } else {
+        printf("Cita registrada con éxito.\n");
+    }
+    
+    sqlite3_close(db);
+}
+
+// Función para consultar citas
+void consultarCitas() {
+    sqlite3 *db = conectarBD();
+    if (!db) return;
+    
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT Id_Cita, Fecha_C, Motivo, Estado FROM Cita_Medica";
+    
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al consultar citas: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return;
+    }
+    
+    printf("\nCitas programadas:\n");
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        printf("ID: %s, Fecha: %s, Motivo: %s, Estado: %s\n", 
+            sqlite3_column_text(stmt, 0), 
+            sqlite3_column_text(stmt, 1), 
+            sqlite3_column_text(stmt, 2), 
+            sqlite3_column_text(stmt, 3));
+    }
+    
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+}
+
+// Función para cancelar una cita
+void cancelarCita(const char *id_cita) {
+    sqlite3 *db = conectarBD();
+    if (!db) return;
+
+    char sql[256];
+    sprintf(sql, "DELETE FROM Cita_Medica WHERE Id_Cita = '%s';", id_cita);
+    
+    if (sqlite3_exec(db, sql, 0, 0, NULL) != SQLITE_OK) {
+        printf("Error al cancelar la cita: %s\n", sqlite3_errmsg(db));
+    } else {
+        printf("Cita cancelada con éxito.\n");
+    }
+    
+    sqlite3_close(db);
+}
+
 
 void gestionarCitas() {
     int opcion;
@@ -72,9 +207,8 @@ void gestionarCitas() {
         printf("\nGESTION DE CITAS MEDICAS\n");
         printf("1. Coger cita\n");
         printf("2. Consultar citas programadas\n");
-        printf("3. Modificar una cita\n");
-        printf("4. Cancelar una cita\n");
-        printf("5. Salir\n");
+        printf("3. Cancelar una cita\n");
+        printf("4. Salir\n");
         printf("Elija una opcion: ");
         scanf("%d", &opcion);
 
@@ -85,7 +219,6 @@ void gestionarCitas() {
                     printf("\nCoger cita:\n");
                     printf("Motivo: ");
                     scanf("%s", motivo);
-                        // Validación de la fecha
                      // Validación de la fecha
                     while (1) {
                         printf("Fecha (formato: dd/mm/yyyy): ");
@@ -102,21 +235,21 @@ void gestionarCitas() {
                     printf("Estado: ");
                     scanf("%s", estado);
                     printf("\nCita programada con motivo '%s' para la fecha '%s' con estado '%s'.\n", motivo, fecha, estado);
+                    registrarCita(fecha, motivo, estado, id_paciente);
                 }
                 break;
             case 2:
                 printf("\nConsultando citas programadas...\n");
-                // Aquí iría la lógica para mostrar citas programadas
+                consultarCitas();
                 break;
+
             case 3:
-                printf("\nModificando una cita...\n");
-                // Aquí iría la lógica para modificar una cita
+                printf("\nCancelando una cita...\n");
+                printf("\nIngrese el ID de la cita a cancelar: ");
+                scanf("%s", id_cita);
+                cancelarCita(id_cita);
                 break;
             case 4:
-                printf("\nCancelando una cita...\n");
-                // Aquí iría la lógica para cancelar una cita
-                break;
-            case 5:
                 return; // Salir de la gestión de citas
             default:
                 printf("Opcion no valida. Intente de nuevo.\n");
