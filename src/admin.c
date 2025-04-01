@@ -383,6 +383,21 @@ void ReporteEmpleados(sqlite3 *db) {
     }
 }
 
+void ReporteMedicos(sqlite3 *db) {
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT Id_Reporte, Descripcion, Fecha_R FROM Reporte WHERE Id_Medico IS NOT NULL";
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) == SQLITE_OK) {
+        printf("\nReportes realizados por Médicos:\n");
+        printf("ID Reporte | Descripción | Fecha Reporte\n");
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            printf("%s | %s | %s\n",
+                   sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1),
+                   sqlite3_column_text(stmt, 2));
+        }
+        sqlite3_finalize(stmt);
+    }
+}  
+
 void generarReportes()
 {
     printf("\n--- Generar Reportes ---\n");
