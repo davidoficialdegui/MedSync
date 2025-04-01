@@ -17,7 +17,7 @@ typedef struct {
 // Funciones de conexión a la base de datos
 int abrirBD(const char *nombre_bd);
 void cerrarBD();
-int ejecutarConsulta(const char *sql);
+int ejecutarConsultaHistorial(const char *sql);
 
 // Funciones de gestión del historial médico
 void registrarHistorial(int Id_Paciente, int Id_Medico, const char *Diagnostico, const char *Tratamiento, const char *Observaciones);

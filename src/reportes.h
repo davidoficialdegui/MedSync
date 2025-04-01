@@ -15,8 +15,8 @@ typedef struct {
     int Id_Medico;         
 } Reporte;
 
-int abrirBD(const char *nombre_bd);
-void cerrarBD();
+int abrirBDReportes(const char *nombre_bd);
+void cerrarBDPaciente();
 void generarReporte(const char *tipo_reporte, const char *descripcion, int Id_Paciente, int Id_Empleado, int Id_Medico);
 void consultarReportes();
 void generarReporteCitasProgramadas();

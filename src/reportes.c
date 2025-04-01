@@ -15,7 +15,7 @@ sqlite3 *db;
 Reporte reportes[MAX_REPORTES];
 int totalReportes = 0;
 
-int abrirBD(const char *nombre_bd) {
+int abrirBDReportes(const char *nombre_bd) {
     int rc = sqlite3_open(nombre_bd, &db);
     if (rc) {
         printf("Error al abrir la base de datos: %s\n", sqlite3_errmsg(db));
@@ -24,7 +24,7 @@ int abrirBD(const char *nombre_bd) {
     return 0;
 }
 
-void cerrarBD() {
+void cerrarBDPaciente() {
     sqlite3_close(db);
 }
 

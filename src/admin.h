@@ -23,7 +23,7 @@ void EliminaPaciente(sqlite3 *db);
 
 // metodos para empleado
 void gestionarEmpleados(sqlite3 *db);
-void registrarNuevoEmpleado(sqlite3 *db);
+//void registrarNuevoEmpleado(sqlite3 *db);
 void BuscarEmpleado(sqlite3 *db);
 void EditarEmpleado(sqlite3 *db);
 void EliminaEmpleado(sqlite3 *db);

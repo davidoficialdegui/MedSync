@@ -162,7 +162,7 @@ void consultarCitas( sqlite3 *db) {
 }
 
 // Función para cancelar una cita
-void cancelarCita(sqlite3 *db ,const char *id_cita) {
+void cancelarCitaPaciente(sqlite3 *db ,const char *id_cita) {
 
     if (!db) return;
 
@@ -231,7 +231,7 @@ void gestionarCitas(sqlite3 *db, const char *idPaciente) {
                 printf("\nIngrese el ID de la cita a cancelar: ");
                 char id_cita[20];  // Asigna suficiente espacio
                 scanf("%s", id_cita);
-                cancelarCita(db, id_cita);
+                cancelarCitaPaciente(db, id_cita);
                 break;
             case 4:
                 return; // Salir de la gestión de citas

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "sqlite3.h" 
 #include "admin.h"
+#include "empleado.h"
 
 // metodos para paciente ----------------------------------
 void registrarNuevoPaciente(sqlite3 *db)
@@ -195,7 +196,7 @@ void gestionarPacientes(sqlite3 *db)
 
 // metodos para empleado ------------------------------------------
 
-void registrarNuevoEmpleado(sqlite3 *db)
+/* void registrarNuevoEmpleado(sqlite3 *db)
 {
     char id[20], nombre[50], dni[20], telefono[20], cargo[30];
     char sql[256];
@@ -223,7 +224,7 @@ void registrarNuevoEmpleado(sqlite3 *db)
     {
         printf("Empleado registrado exitosamente.\n");
     }
-}
+} */
 
 void BuscarEmpleado(sqlite3 *db)
 {

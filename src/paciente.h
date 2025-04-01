@@ -45,7 +45,7 @@ void registrarCita(sqlite3 *db, const char *fecha, const char *motivo, const cha
 void consultarCitas(sqlite3 *db);
 
 // Función para cancelar una cita por su ID
-void cancelarCita(sqlite3 *db, const char *id_cita);
+void cancelarCitaPaciente(sqlite3 *db, const char *id_cita);
 
 // Función para gestionar las citas médicas de un paciente
 void gestionarCitas(sqlite3 *db, const char *idPaciente);

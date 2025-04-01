@@ -22,7 +22,7 @@ void cerrarBD() {
     sqlite3_close(db);
 }
 
-int ejecutarConsulta(const char *sql) {
+int ejecutarConsultaHistorial(const char *sql) {
     char *errMsg = 0;
     int rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
     if (rc != SQLITE_OK) {
@@ -45,7 +45,7 @@ void registrarHistorial(int Id_Paciente, int Id_Medico, const char *Diagnostico,
         "VALUES ('%s', '%s', '%s', %d, %d, NULL, '%s');",
         Diagnostico, Tratamiento, Observaciones, Id_Paciente, Id_Medico, Fecha);
     
-    if (ejecutarConsulta(sql) == SQLITE_OK) {
+    if (ejecutarConsultaHistorial(sql) == SQLITE_OK) {
         printf("Historial médico registrado con éxito.\n");
     } else {
         printf("Error al registrar el historial médico.\n");
