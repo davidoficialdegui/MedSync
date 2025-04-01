@@ -328,6 +328,12 @@ void consultarHistorial(const char *id_paciente) {
     }
 }
 
+// Función para generar un ID único para el reporte
+char* generarIdReporte() {
+    static char id[10];
+    sprintf(id, "REP%04d", rand() % 10000); // Genera un ID con formato "REPxxxx"
+    return id;
+}
     void atencionCliente() {
         char descripcion[200];
         char fecha[20];
