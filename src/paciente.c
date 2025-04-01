@@ -334,6 +334,29 @@ char* generarIdReporte() {
     sprintf(id, "REP%04d", rand() % 10000); // Genera un ID con formato "REPxxxx"
     return id;
 }
+
+// Función para registrar un reporte en la base de datos
+void registrarReporte(const char *descripcion, const char *fecha, const char *id_paciente, const char *id_empleado, const char *id_medico) {
+    sqlite3 *db = conectarBD();
+    if (!db) return;
+
+    char sql[512];
+    char *id_reporte = generarIdReporte();  // Generar un ID único para el reporte
+
+    // Preparar la consulta SQL para insertar el reporte
+    sprintf(sql, "INSERT INTO Reporte (Id_Reporte, Descripcion, Fecha_R, Id_Paciente, Id_Empleado, Id_Medico) "
+                 "VALUES ('%s', '%s', '%s', '%s', '%s', '%s');",
+            id_reporte, descripcion, fecha, id_paciente, id_empleado, id_medico);
+
+    // Ejecutar la consulta SQL
+    if (sqlite3_exec(db, sql, 0, 0, NULL) != SQLITE_OK) {
+        printf("Error al registrar el reporte: %s\n", sqlite3_errmsg(db));
+    } else {
+        printf("Reporte registrado con éxito.\n");
+    }
+
+    sqlite3_close(db);
+}
     void atencionCliente() {
         char descripcion[200];
         char fecha[20];
