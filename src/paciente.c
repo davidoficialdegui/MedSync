@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include "paciente.h"
+#include <sqlite3.h>
 
 // Función para validar si una cadena representa una fecha en formato dd/mm/yyyy
 int esFechaValida(const char *fecha) {
@@ -64,6 +65,15 @@ int esFechaFutura(int diaCita, int mesCita, int anioCita) {
 
     return 0; // La cita es en el pasado o en el presente
 }
+// Función para conectar a la base de datos
+sqlite3* conectarBD() {
+    sqlite3 *db;
+    if (sqlite3_open("clinica.db", &db)) {
+        printf("Error al abrir la base de datos: %s\n", sqlite3_errmsg(db));
+        return NULL;
+    }
+    return db;
+}
 
 void gestionarCitas() {
     int opcion;
@@ -85,7 +95,6 @@ void gestionarCitas() {
                     printf("\nCoger cita:\n");
                     printf("Motivo: ");
                     scanf("%s", motivo);
-                        // Validación de la fecha
                      // Validación de la fecha
                     while (1) {
                         printf("Fecha (formato: dd/mm/yyyy): ");
