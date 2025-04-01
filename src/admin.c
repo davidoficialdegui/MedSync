@@ -160,9 +160,10 @@ void EliminaPaciente(sqlite3 *db)
 
 void gestionarPacientes()
 {
+    int opcion;
 
-    do {
-
+    do
+    {
         printf("\n--- Gestion de Pacientes ---\n");
         printf("1. Registrar nuevo paciente\n");
         printf("2. Buscar paciente\n");
@@ -171,27 +172,27 @@ void gestionarPacientes()
         printf("5. Volver\n");
         printf("Seleccione una opcion: ");
 
-        int opcion;
         scanf("%d", &opcion);
 
-        switch(opcion) {
-            case 1:
-                registrarNuevoPaciente();
-                break;
-            case 2:
-                BuscarPaciente();
-                break;
-            case 3:
-                EditarPaciente();
-                break;
-            case 4:
-                EliminaPaciente();
-                break;
-            case 5:
-                return;            
+        switch (opcion)
+        {
+        case 1:
+            registrarNuevoPaciente();
+            break;
+        case 2:
+            BuscarPaciente();
+            break;
+        case 3:
+            EditarPaciente();
+            break;
+        case 4:
+            EliminaPaciente();
+            break;
+        case 5:
+            return;
         }
-    } while(opcion != 5); 
-} 
+    } while (opcion != 5);
+}
 
 // metodos para empleado ------------------------------------------
 
@@ -314,8 +315,10 @@ void EliminaEmpleado(sqlite3 *db)
 
 void gestionarEmpleados()
 {
+    int opcion;
 
-    do {
+    do
+    {
 
         printf("\n--- Gestion de Empleados ---\n");
         printf("1. Registrar nuevo empleado\n");
@@ -323,30 +326,29 @@ void gestionarEmpleados()
         printf("3. Editar empleado\n");
         printf("4. Eliminar empleado\n");
         printf("5. Volver\n");
-        printf("Seleccione una opcion: "); 
+        printf("Seleccione una opcion: ");
 
-        int opcion;
         scanf("%d", &opcion);
 
-        switch(opcion) {
-            case 1:
-                registrarNuevoEmpleado();
-                break;
-            case 2:
-                BuscarEmpleado();
-                break;
-            case 3:
-                EditarEmpleado();
-                break;
-            case 4:
-                EliminaEmpleado();
-                break;
-            case 5:
-                return;            
+        switch (opcion)
+        {
+        case 1:
+            registrarNuevoEmpleado();
+            break;
+        case 2:
+            BuscarEmpleado();
+            break;
+        case 3:
+            EditarEmpleado();
+            break;
+        case 4:
+            EliminaEmpleado();
+            break;
+        case 5:
+            return;
         }
 
-    } while (opcion <= 5);
-
+    } while (opcion != 5);
 }
 
 // metodos para reporte -------------------------------
