@@ -5,11 +5,15 @@
 #include "sqlite3.h"
 #include "reportes.h"
 #include "citas.h"
-#include "historialmedico.h"
+#include "historial_medico.h"
 
 #define DB_NAME "MedSync.bd"
 
 sqlite3 *db;
+
+// Variables globales para almacenar los reportes
+Reporte reportes[MAX_REPORTES];
+int totalReportes = 0;
 
 int abrirBD(const char *nombre_bd) {
     int rc = sqlite3_open(nombre_bd, &db);
@@ -48,6 +52,19 @@ void generarReporte(const char *tipo_reporte, const char *descripcion, int Id_Pa
 
     if (ejecutarConsulta(sql) == SQLITE_OK) {
         printf("Reporte generado con éxito.\n");
+
+        // Guardar el reporte generado en el arreglo global
+        if (totalReportes < MAX_REPORTES) {
+            Reporte nuevoReporte;
+            strcpy(nuevoReporte.Descripcion, descripcion);
+            strcpy(nuevoReporte.Fecha_R, fecha_actual);
+            nuevoReporte.Id_Paciente = Id_Paciente;
+            nuevoReporte.Id_Empleado = Id_Empleado;
+            nuevoReporte.Id_Medico = Id_Medico;
+
+            reportes[totalReportes] = nuevoReporte;
+            totalReportes++;
+        }
     } else {
         printf("Error al generar el reporte.\n");
     }

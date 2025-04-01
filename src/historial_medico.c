@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "historialmedico.h"
-#include "paciente.h" 
-#include "medico.h" 
+#include <time.h>
+#include "historial_medico.h"
+#include "paciente.h"
+#include "medico.h"
 #include "sqlite3.h"
 
 sqlite3 *db;
@@ -33,17 +34,17 @@ int ejecutarConsulta(const char *sql) {
 
 void registrarHistorial(int Id_Paciente, int Id_Medico, const char *Diagnostico, const char *Tratamiento, const char *Observaciones) {
     char sql[512];
-
+    
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     char Fecha[11];
     sprintf(Fecha, "%02d/%02d/%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
-
+    
     snprintf(sql, sizeof(sql),
         "INSERT INTO Historial_Medico (Diagnostico, Tratamiento, Observaciones, Id_Paciente, Id_Medico, Id_Cita, Fecha) "
         "VALUES ('%s', '%s', '%s', %d, %d, NULL, '%s');",
         Diagnostico, Tratamiento, Observaciones, Id_Paciente, Id_Medico, Fecha);
-
+    
     if (ejecutarConsulta(sql) == SQLITE_OK) {
         printf("Historial médico registrado con éxito.\n");
     } else {
@@ -51,7 +52,7 @@ void registrarHistorial(int Id_Paciente, int Id_Medico, const char *Diagnostico,
     }
 }
 
-void consultarHistorialesPaciente(int Id_Paciente) {
+void consultarHistorialesPaciente(int Id_Paciente) { 
     const char *sql = "SELECT * FROM Historial_Medico WHERE Id_Paciente = ?";
     sqlite3_stmt *stmt;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
@@ -80,6 +81,7 @@ void consultarHistorialesPaciente(int Id_Paciente) {
     }
 }
 
+
 void mostrarHistoriales() {
     const char *sql = "SELECT * FROM Historial_Medico";
     sqlite3_stmt *stmt;
@@ -100,17 +102,4 @@ void mostrarHistoriales() {
     }
 
     sqlite3_finalize(stmt);
-}
-
-int main() {
-    if (abrirBD("MedSync.db") != 0) {
-        return 1;
-    }
-
-    registrarHistorial(1, 2, "Diagnóstico Ejemplo", "Tratamiento Ejemplo", "Observaciones Ejemplo");
-    consultarHistorialesPaciente(1);
-    mostrarHistoriales();
-
-    cerrarBD();
-    return 0;
 }
