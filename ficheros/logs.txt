@@ -2,3 +2,4 @@ Usuario: medico1, Inicio de sesión: 2025-03-30 18:55:05
 Usuario: medico1, Inicio de sesión: 2025-03-30 23:31:19
 Usuario: medico1, Inicio de sesión: 2025-03-30 23:32:13
 Usuario: admin2, Inicio de sesión: 2025-03-30 23:36:04
+
