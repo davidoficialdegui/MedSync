@@ -134,12 +134,12 @@ char *generarIdCita() {
 }
 
 void registrarCita(const char *fecha, const char *motivo, const char *estado, const char *id_paciente) {
-    char *id_medico = obtenerIdMedicoAleatorio();
+    char  idCita[20],*id_medico = obtenerIdMedicoAleatorio();
     if (!id_medico) {
         printf("No se pudo asignar un médico.\n");
         return;
     }
-    
+    generarIdCita(idCita);
     sqlite3 *db = conectarBD();
     if (!db) return;
 
@@ -200,7 +200,7 @@ void cancelarCita(const char *id_cita) {
 }
 
 
-void gestionarCitas() {
+void gestionarCitas(sqlite3 *db, const char *idPaciente) {
     int opcion;
 
     while (1) {
@@ -215,7 +215,12 @@ void gestionarCitas() {
         switch(opcion) {
             case 1:
                 {
-                    char motivo[100], fecha[20], estado[20];
+                    char idCita[20], idMedico[20], motivo[100], fecha[20], estado[20];
+                    // Obtener un Id_Cita único
+                    generarIdCita(db, idCita);
+
+                    // Obtener un Id_Medico aleatorio
+                    obtenerIdMedicoAleatorio(db, idMedico);
                     printf("\nCoger cita:\n");
                     printf("Motivo: ");
                     scanf("%s", motivo);
