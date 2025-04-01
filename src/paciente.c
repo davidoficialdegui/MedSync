@@ -367,10 +367,7 @@ void atencionCliente() {
 
     // La descripción del problema
     printf("\nDescripción del problema: ");
-    getchar();  // Limpiar el buffer de entrada
-    fgets(descripcion, sizeof(descripcion), stdin);  // Leer la descripción completa
-    descripcion[strcspn(descripcion, "\n")] = 0;  // Eliminar el salto de línea al final
-
+    scanf("\n]%c", descripcion);  // Leer la descripción completa
     // Validación de la fecha
     while (1) {
         printf("Fecha de la consulta (formato: dd/mm/yyyy): ");
