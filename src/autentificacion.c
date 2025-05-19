@@ -1,102 +1,72 @@
+// src/autentificacion.c
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "autentificacion.h"
 #include "menu.h"
-#include <time.h>
-#include "sqlite3.h"
 
-// Función para obtener la fecha y hora actual
-void obtenerFechaHora(char *fechaHora) {
-    time_t t;
-    struct tm *tm_info;
-
-    // Obtener la hora actual
-    time(&t);
-    tm_info = localtime(&t);
-
-    // Formatear la fecha y hora
-    strftime(fechaHora, 20, "%Y-%m-%d %H:%M:%S", tm_info);
-}
-
-// Función para registrar el log con fecha, hora y nombre de usuario
-void registrarLog(const char *usuario) {
-    FILE *logfile = fopen("../ficheros/logs.txt", "a");  // Abrir el archivo en modo append
-    if (logfile == NULL) {
-        printf("Error al abrir el archivo de logs.\n");
-        return;
-    }
-
-    char fechaHora[20];
-    obtenerFechaHora(fechaHora);  // Obtener la fecha y hora actual
-
-    // Escribir la información de inicio de sesión en el archivo
-    fprintf(logfile, "Usuario: %s, Inicio de sesión: %s\n", usuario, fechaHora);
-
-    fclose(logfile);  // Cerrar el archivo
-}
-
-
-// Función que realiza todo el proceso de autenticación y retorna el tipo de usuario
+// Lee ficheros/usuarios.txt y devuelve el tipo si encuentra credenciales válidas.
 TipoUsuario autentificarUsuario(const char *usuario, const char *contrasena) {
-    FILE *archivo = fopen("../ficheros/usuarios.txt", "r");
-    
-    if (!archivo) {
-        printf("Error al abrir el archivo de usuarios.\n");
+    FILE *fp = fopen("ficheros/usuarios.txt", "r");
+    if (!fp) {
+        fprintf(stderr, "No se pudo abrir ficheros/usuarios.txt: %s\n", strerror(errno));
         return TIPO_DESCONOCIDO;
     }
 
     char linea[MAX_LINE];
-    char credencialUsuario[MAX_USER];
-    char credencialContrasena[MAX_PASS];
-    
-    TipoUsuario tipo = TIPO_DESCONOCIDO;
+    char file_user[MAX_USER], file_pass[MAX_PASS];
+    TipoUsuario current = TIPO_DESCONOCIDO;
 
-    while (fgets(linea, MAX_LINE, archivo)) {
-        if (strstr(linea, "Medicos:")) tipo = TIPO_MEDICO;
-        if (strstr(linea, "Pacientes:")) tipo = TIPO_PACIENTE;
-        if (strstr(linea, "Administracion:")) tipo = TIPO_ADMIN;
+    while (fgets(linea, sizeof(linea), fp)) {
+        // Detectamos la sección
+        if (strstr(linea, "Medicos:"))       current = TIPO_MEDICO;
+        else if (strstr(linea, "Pacientes:")) current = TIPO_PACIENTE;
+        else if (strstr(linea, "Administracion:")) current = TIPO_ADMIN;
 
-        if (sscanf(linea, "usuario: %s", credencialUsuario) == 1) {
-            fgets(linea, MAX_LINE, archivo);
-            sscanf(linea, "contrasena: %s", credencialContrasena);
-            
-            if (strcmp(usuario, credencialUsuario) == 0 && strcmp(contrasena, credencialContrasena) == 0) {
-                fclose(archivo);
-                return tipo;
+        // Si es línea de "usuario:", leemos también la siguiente de "contrasena:"
+        else if (sscanf(linea, "usuario: %49s", file_user) == 1) {
+            if (fgets(linea, sizeof(linea), fp) &&
+                sscanf(linea, "contrasena: %49s", file_pass) == 1)
+            {
+                if (strcmp(usuario, file_user) == 0 &&
+                    strcmp(contrasena, file_pass) == 0)
+                {
+                    fclose(fp);
+                    return current;
+                }
             }
         }
     }
 
-    fclose(archivo);
+    fclose(fp);
     return TIPO_DESCONOCIDO;
 }
 
-void autenticarYMostrarMensaje(const char *usuario, const char *contrasena, sqlite3 *db) {
+void autenticarYMostrarMensaje(const char *usuario,
+                               const char *contrasena,
+                               sqlite3 *db)
+{
     TipoUsuario tipo = autentificarUsuario(usuario, contrasena);
-    
-    // Si la autenticación es exitosa, registramos el log
-    if (tipo != TIPO_DESCONOCIDO) {
-        registrarLog(usuario);  // Registrar el log con la fecha, hora y usuario
+    if (tipo == TIPO_DESCONOCIDO) {
+        printf("Usuario o contraseña incorrectos.\n");
+        return;
     }
 
+    // Mostrar mensaje y registrar en log si quieres...
     switch (tipo) {
         case TIPO_MEDICO:
-            printf("Autenticacion exitosa. Bienvenido, Dr. %s!\n", usuario);
+            printf("¡Bienvenido Dr. %s!\n", usuario);
             menuMedico(db);
             break;
         case TIPO_PACIENTE:
-            printf("Autenticacion exitosa. Bienvenido, paciente %s!\n", usuario);
+            printf("¡Bienvenido paciente %s!\n", usuario);
             menuPaciente(db);
             break;
         case TIPO_ADMIN:
-            printf("Autenticacion exitosa. Bienvenido, administrador %s!\n", usuario);
+            printf("¡Bienvenido administrador %s!\n", usuario);
             menuAdministracion(db);
             break;
         default:
-            printf("Usuario o contrasena incorrectos.\n");
             break;
     }
 }
-
-
-
