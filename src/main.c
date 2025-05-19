@@ -1,39 +1,36 @@
+// src/main.c
 #include <stdio.h>
-#include <stdlib.h>
+#include <sqlite3.h>
 #include "autentificacion.h"
-#include "sqlite3.h"
 
-
-// main_menu.c
-int main(int argc, char *argv[])
-{
-
+int main(void) {
     sqlite3 *db;
-    int rc;
-
-    // Intentar abrir la base de datos (se crea si no existe)
-    rc = sqlite3_open("hospital.db", &db);
-
-    if (rc)
+    if (sqlite3_open_v2("MedSync.db", &db,
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
     {
-        printf("No se pudo abrir la base de datos: %s\n", sqlite3_errmsg(db));
-        return 1; // Salir con error
+        fprintf(stderr, "No se pudo abrir MedSync.db: %s\n",
+                sqlite3_errmsg(db));
+        return 1;
     }
-    else
-    {
-        printf("Conexión a SQLite exitosa.\n");
+    printf("¡Base de datos abierta correctamente!\n\n");
 
-        // Cerrar la base de datos al terminar
-        sqlite3_close(db);
+    char usuario[MAX_USER], contrasena[MAX_PASS];
 
-        char usuario[MAX_USER], contrasena[MAX_PASS];
-
+    // Intentar hasta que la autenticación sea exitosa
+    while (1) {
         printf("Ingrese usuario: ");
-        scanf("%s", usuario);
-
+        scanf("%49s", usuario);
         printf("Ingrese contrasena: ");
-        scanf("%s", contrasena);
+        scanf("%49s", contrasena);
 
-        autenticarYMostrarMensaje(usuario, contrasena, db);
+        TipoUsuario tipo = autentificarUsuario(usuario, contrasena);
+        if (tipo != TIPO_DESCONOCIDO) {
+            autenticarYMostrarMensaje(usuario, contrasena, db);
+            break;
+        }
+        printf("Intente de nuevo.\n\n");
     }
+
+    sqlite3_close(db);
+    return 0;
 }
