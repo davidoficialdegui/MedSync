@@ -377,11 +377,11 @@ void consultarHistorialPaciente(sqlite3 *db) {
 void atenderCita(sqlite3 *db, const char* id_medico) {
     int id_cita;
     char sql_select[] = "SELECT c.id, p.nombre, c.fecha, c.hora, c.motivo "
-                        "FROM Citas c "
+                        "FROM Cita_Medica c "
                         "JOIN Pacientes p ON c.id_paciente = p.id_paciente "
                         "WHERE c.id = ? AND c.id_medico = ? AND c.estado = 'programada';";
-    char sql_update[] = "UPDATE Citas SET estado = 'completada' WHERE id = ?;";
-    char sql_insert[] = "INSERT INTO HistorialMedico (id_paciente, id_medico, fecha, diagnostico, tratamiento) "
+    char sql_update[] = "UPDATE Cita_Medica SET estado = 'completada' WHERE id = ?;";
+    char sql_insert[] = "INSERT INTO Historial_Medico (id_paciente, id_medico, fecha, diagnostico, tratamiento) "
                         "VALUES (?, ?, date('now'), ?, ?);";
     sqlite3_stmt *stmt;
     char diagnostico[256], tratamiento[256];
