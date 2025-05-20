@@ -71,8 +71,7 @@ void BuscarPaciente(sqlite3 *db)
 
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK)
     {
-        //printf("Error preparando la consulta\n");
-        printf("Error preparando la consulta: %s\n", sqlite3_errmsg(db));
+        printf("Error preparando la consulta\n");
         return;
     }
 
