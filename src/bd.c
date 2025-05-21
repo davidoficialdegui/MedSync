@@ -25,7 +25,7 @@ int bd_exec(sqlite3 *db, const char *sql) {
     char *err = NULL;
     int rc = sqlite3_exec(db, sql, NULL, NULL, &err);
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "Error en bd_exec: %s\nSQL: %s\n", err, sql);
+        fprintf(stderr, "Error SQL: %s\n", err);
         sqlite3_free(err);
     }
     return rc;

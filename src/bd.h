@@ -6,10 +6,10 @@
 
 int bd_open(const char *filename, sqlite3 **db_out);
 
-
 void bd_close(sqlite3 *db);
 
-bd_exec(sqlite3 *db, const char *sql);
+int bd_exec(sqlite3 *db, const char *sql);
+
 
 int bd_query(sqlite3 *db, const char *sql,
              int (*callback)(void*,int,char**,char**),

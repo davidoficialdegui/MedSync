@@ -11,8 +11,16 @@
 #include "reportes.h"
 #include "admin.h"
 
+
+
 #define STRBUF_LEN 128
 
+char *readline(const char *prompt, char *buf, size_t size) {
+    if (prompt) fputs(prompt, stdout);
+    if (!fgets(buf, size, stdin)) return NULL;
+    buf[strcspn(buf, "\n")] = '\0';
+    return buf;
+}
 
 static int generalLlamadaDeVuelta(void *data, int cols, char **values, char **names) {
     for (int i = 0; i < cols; i++) {

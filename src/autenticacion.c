@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <sqlite3.h>
+#include "bd.h"
+
 
 Role autenticar(sqlite3 *db, const char *username, const char *password) {
     const char *sql = "SELECT role FROM usuarios WHERE username=? AND password=?;";
@@ -21,4 +23,13 @@ Role autenticar(sqlite3 *db, const char *username, const char *password) {
     }
     sqlite3_finalize(stmt);
     return role;
+}
+void ensure_default_admin(sqlite3 *db) {
+    const char *sql = 
+      "INSERT OR IGNORE INTO admin (username, password) "
+      "VALUES ('admin', 'admin');";
+    int rc = bd_exec(db, sql);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "No pude crear el admin por defecto\n");
+    }
 }
