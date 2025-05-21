@@ -1,28 +1,21 @@
 #ifndef MEDICO_H
 #define MEDICO_H
 
-#include "sqlite3.h"
+#include <sqlite3.h>
 
-typedef struct {
-    char Id_Medico[50];
-    char Nombre_M[50];
-    char DNI_M[50];
-    char Telefono_M[50];
-    char Especialidad[50];
-    char Usuario[50];
-    char Contrasena[50];
-} medico;
+int medico_create(sqlite3 *db,
+                  const char *nombre,
+                  const char *especialidad,
+                  const char *telefono,
+                  const char *email);
 
-// Gestión de médicos
-void registrarMedico(sqlite3 *db);
-void buscarMedico(sqlite3 *db);
-void editarMedico(sqlite3 *db);
-void eliminarMedico(sqlite3 *db);
-void listarMedicos(sqlite3 *db);
+int medico_list(sqlite3 *db);
+int medico_update(sqlite3 *db,
+                  int id,
+                  const char *nombre,
+                  const char *especialidad,
+                  const char *telefono,
+                  const char *email);
+int medico_delete(sqlite3 *db, int id);
 
-// Funcionalidades médicas
-void gestionarCitasMedico(sqlite3 *db, const char* id_medico);
-void consultarHistorialPaciente(sqlite3 *db);
-void atenderCita(sqlite3 *db, const char* id_medico);
-
-#endif
+#endif // MEDICO_H
