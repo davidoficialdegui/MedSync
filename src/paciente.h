@@ -16,6 +16,8 @@ typedef struct
 	char Telefono_P[50];
 	char Direccion_P[50];
 	char Fecha_Reg[50];
+	char usuario[50];       // NUEVO
+    char contrasena[50];    // NUEVO
 }paciente;
 
 

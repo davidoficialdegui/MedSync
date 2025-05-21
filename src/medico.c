@@ -6,7 +6,7 @@
 
 void registrarMedico(sqlite3 *db) {
     medico nuevo;
-    char sql[] = "INSERT INTO Medicos (id_medico, nombre, dni, telefono, especialidad, usuario, contraseña) VALUES (?, ?, ?, ?, ?, ?, ?);";
+    char sql[] = "INSERT INTO Medicos (id_medico, nombre, dni, telefono, especialidad, usuario, contrasena) VALUES (?, ?, ?, ?, ?, ?, ?);";
     sqlite3_stmt *stmt;
 
     printf("\n--- Registrar Nuevo Médico ---\n");
