@@ -7,7 +7,7 @@
 // metodos para paciente ----------------------------------
 void registrarNuevoPaciente(sqlite3 *db)
 {
-    char sql[] = "INSERT INTO Paciente (Id_Paciente, DNI_P, Nombre_P, Email, Fecha_Ncto, Genero, Telefono_P, Direccion_P, Fecha_Reg) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+   char sql[] = "INSERT INTO Paciente (Id_Paciente, DNI_P, Nombre_P, Email, Fecha_Ncto, Genero, Telefono_P, Direccion_P, Fecha_Reg, Usuario, Contrasena) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
     sqlite3_stmt *stmt;
 
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK)
@@ -16,7 +16,7 @@ void registrarNuevoPaciente(sqlite3 *db)
         return;
     }
 
-    char id[20], dni[15], nombre[50], email[50], fecha_ncto[15], genero[10], direccion[100], fecha_reg[15];
+    char id[20], dni[15], nombre[50], email[50], fecha_ncto[15], genero[10], direccion[100], fecha_reg[15], usuario[50], contrasena[50];;
     int telefono;
 
     printf("Ingrese ID del paciente: ");
@@ -37,6 +37,10 @@ void registrarNuevoPaciente(sqlite3 *db)
     scanf("%s", direccion);
     printf("Ingrese Fecha de Registro (YYYY-MM-DD): ");
     scanf("%s", fecha_reg);
+    printf("Ingrese nombre de usuario: ");
+    scanf("%s", usuario);
+    printf("Ingrese contraseña: ");
+    scanf("%s", contrasena);
 
     sqlite3_bind_text(stmt, 1, id, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, dni, -1, SQLITE_STATIC);
@@ -47,6 +51,8 @@ void registrarNuevoPaciente(sqlite3 *db)
     sqlite3_bind_int(stmt, 7, telefono);
     sqlite3_bind_text(stmt, 8, direccion, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 9, fecha_reg, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 10, usuario, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 11, contrasena, -1, SQLITE_STATIC);
 
     if (sqlite3_step(stmt) != SQLITE_DONE)
     {
@@ -80,10 +86,12 @@ void BuscarPaciente(sqlite3 *db)
     if (sqlite3_step(stmt) == SQLITE_ROW)
     {
         printf("Paciente encontrado:\n");
-        printf("ID: %s, Nombre: %s, DNI: %s, Email: %s, Telefono: %d\n",
+        printf("ID: %s, Nombre: %s, DNI: %s, Email: %s, Telefono: %d""Usuario: %s, Contraseña: %s\n",
                sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 2),
                sqlite3_column_text(stmt, 1), sqlite3_column_text(stmt, 3),
-               sqlite3_column_int(stmt, 6));
+               sqlite3_column_int(stmt, 6), sqlite3_column_text(stmt, 9),
+               sqlite3_column_text(stmt, 10));
+        
     }
     else
     {
@@ -95,35 +103,56 @@ void BuscarPaciente(sqlite3 *db)
 
 void EditarPaciente(sqlite3 *db)
 {
-    char sql[] = "UPDATE Paciente SET Nombre_P = ?, Telefono_P = ? WHERE Id_Paciente = ?;";
+    char sql[] = "UPDATE Paciente SET DNI_P = ?, Nombre_P = ?, Email = ?, Fecha_Ncto = ?, Genero = ?, Telefono_P = ?, Direccion_P = ?, Fecha_Reg = ?, Usuario = ?, Contrasena = ? WHERE Id_Paciente = ?;";
     sqlite3_stmt *stmt;
-    char id[20], nombre[50];
+
+    char id[20], dni[15], nombre[50], email[50], fecha_ncto[15], genero[10], direccion[100], fecha_reg[15], usuario[50], contrasena[50];
     int telefono;
 
     printf("Ingrese ID del paciente a editar: ");
     scanf("%s", id);
-    printf("Ingrese nuevo Nombre: ");
+    printf("Nuevo DNI: ");
+    scanf("%s", dni);
+    printf("Nuevo Nombre: ");
     scanf("%s", nombre);
-    printf("Ingrese nuevo Telefono: ");
+    printf("Nuevo Email: ");
+    scanf("%s", email);
+    printf("Nueva Fecha de Nacimiento (YYYY-MM-DD): ");
+    scanf("%s", fecha_ncto);
+    printf("Nuevo Género: ");
+    scanf("%s", genero);
+    printf("Nuevo Teléfono: ");
     scanf("%d", &telefono);
+    printf("Nueva Dirección: ");
+    scanf("%s", direccion);
+    printf("Nueva Fecha de Registro (YYYY-MM-DD): ");
+    scanf("%s", fecha_reg);
+    printf("Nuevo Usuario: ");
+    scanf("%s", usuario);
+    printf("Nueva Contraseña: ");
+    scanf("%s", contrasena);
 
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK)
-    {
-        printf("Error preparando la consulta\n");
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK) {
+        printf("Error preparando la consulta: %s\n", sqlite3_errmsg(db));
         return;
     }
 
-    sqlite3_bind_text(stmt, 1, nombre, -1, SQLITE_STATIC);
-    sqlite3_bind_int(stmt, 2, telefono);
-    sqlite3_bind_text(stmt, 3, id, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, dni, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, nombre, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, email, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, fecha_ncto, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, genero, -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 6, telefono);
+    sqlite3_bind_text(stmt, 7, direccion, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 8, fecha_reg, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 9, usuario, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 10, contrasena, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 11, id, -1, SQLITE_STATIC);
 
-    if (sqlite3_step(stmt) != SQLITE_DONE)
-    {
-        printf("Error actualizando paciente\n");
-    }
-    else
-    {
-        printf("Paciente actualizado exitosamente\n");
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        printf("Error actualizando paciente: %s\n", sqlite3_errmsg(db));
+    } else {
+        printf("Paciente actualizado exitosamente.\n");
     }
 
     sqlite3_finalize(stmt);
@@ -248,6 +277,8 @@ void BuscarEmpleado(sqlite3 *db)
             printf("DNI: %s\n", sqlite3_column_text(stmt, 2));
             printf("Telefono: %s\n", sqlite3_column_text(stmt, 3));
             printf("Cargo: %s\n", sqlite3_column_text(stmt, 4));
+            printf("Usuario: %s\n", sqlite3_column_text(stmt, 5));
+        printf("Contraseña: %s\n", sqlite3_column_text(stmt, 6));
         }
         else
         {
@@ -263,7 +294,7 @@ void BuscarEmpleado(sqlite3 *db)
 
 void EditarEmpleado(sqlite3 *db)
 {
-    char id[20], nombre[50], dni[20], telefono[20], cargo[30];
+    char id[20], nombre[50], dni[20], telefono[20], cargo[30], usuario[50], contrasena[50];
     char sql[256];
     int result;
 
@@ -277,8 +308,13 @@ void EditarEmpleado(sqlite3 *db)
     scanf("%s", telefono);
     printf("Ingrese nuevo cargo: ");
     scanf("%s", cargo);
+    printf("Ingrese nuevo usuario: ");
+    scanf("%s", usuario);
+    printf("Ingrese nueva contrasena: ");
+    scanf("%s", contrasena);
 
-    sprintf(sql, "UPDATE Empleado SET Nombre_E='%s', DNI_E='%s', Telefono_E='%s', Cargo='%s' WHERE Id_Empleado='%s';", nombre, dni, telefono, cargo, id);
+    sprintf(sql, "UPDATE Empleado SET Nombre_E='%s', DNI_E='%s', Telefono_E='%s', Cargo='%s', Usuario='%s', Contrasena='%s' WHERE Id_Empleado='%s';",
+        nombre, dni, telefono, cargo, usuario, contrasena, id);
 
     result = sqlite3_exec(db, sql, 0, 0, 0);
     if (result != SQLITE_OK)
