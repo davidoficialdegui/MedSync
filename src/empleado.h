@@ -9,6 +9,8 @@ typedef struct
     char DNI_E[50];
     char Telefono_E[50];
     char Cargo[50];
+    char Usuario[50];
+    char Contrasena[50];
 } empleado;
 
 // Function declarations (actualizadas para recibir conexión a BD)

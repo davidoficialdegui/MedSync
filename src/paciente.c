@@ -337,7 +337,9 @@ void atencionCliente(sqlite3 *db) {
 
     // La descripción del problema
     printf("\nDescripción del problema: ");
-    scanf("\n%c", descripcion);  // Leer la descripción completa
+    while (getchar() != '\n'); // Limpiar el buffer
+    fgets(descripcion, sizeof(descripcion), stdin);
+    descripcion[strcspn(descripcion, "\n")] = '\0'; // Leer la descripción completa
     // Validación de la fecha
     while (1) {
         printf("Fecha de la consulta (formato: dd/mm/yyyy): ");

@@ -5,7 +5,7 @@
 
 int main(void) {
     sqlite3 *db;
-    if (sqlite3_open_v2("MedSync.db", &db,
+    if (sqlite3_open_v2("MedSyncc.db", &db,
             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
     {
         fprintf(stderr, "No se pudo abrir MedSync.db: %s\n",

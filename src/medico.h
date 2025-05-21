@@ -9,6 +9,8 @@ typedef struct {
     char DNI_M[50];
     char Telefono_M[50];
     char Especialidad[50];
+    char Usuario[50];
+    char Contrasena[50];
 } medico;
 
 // Gestión de médicos

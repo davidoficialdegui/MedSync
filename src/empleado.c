@@ -6,7 +6,7 @@
 
 void registrarNuevoEmpleado(sqlite3 *db) {
     empleado nuevo;
-    char sql[] = "INSERT INTO Empleados (id_empleado, nombre, dni, telefono, cargo) VALUES (?, ?, ?, ?, ?);";
+    char sql[] = "INSERT INTO Empleados (id_empleado, nombre, dni, telefono, cargo, usuario, contrasena) VALUES (?, ?, ?, ?, ?, ?, ?);";
     sqlite3_stmt *stmt;
 
     printf("\n--- Registrar Nuevo Empleado ---\n");
@@ -21,6 +21,10 @@ void registrarNuevoEmpleado(sqlite3 *db) {
     scanf("%s", nuevo.Telefono_E);
     printf("Cargo: ");
     scanf(" [^\n]", nuevo.Cargo);
+    printf("Usuario: ");
+    scanf("%s", nuevo.Usuario);
+    printf("Contraseña: ");
+    scanf("%s", nuevo.Contrasena);
 
     if(sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
         fprintf(stderr, "Error preparando la consulta: %s\n", sqlite3_errmsg(db));
@@ -32,6 +36,8 @@ void registrarNuevoEmpleado(sqlite3 *db) {
     sqlite3_bind_text(stmt, 3, nuevo.DNI_E, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 4, nuevo.Telefono_E, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 5, nuevo.Cargo, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 6, nuevo.Usuario, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 7, nuevo.Contrasena, -1, SQLITE_STATIC);
 
     if(sqlite3_step(stmt) != SQLITE_DONE) {
         fprintf(stderr, "Error insertando empleado: %s\n", sqlite3_errmsg(db));
@@ -65,6 +71,8 @@ void buscarEmpleado(sqlite3 *db) {
         printf("DNI: %s\n", sqlite3_column_text(stmt, 2));
         printf("Teléfono: %s\n", sqlite3_column_text(stmt, 3));
         printf("Cargo: %s\n", sqlite3_column_text(stmt, 4));
+        printf("Usuario: %s\n", sqlite3_column_text(stmt, 5));
+        printf("Contraseña: %s\n", sqlite3_column_text(stmt, 6));
     } else {
         printf("\nNo se encontró empleado con ID: %s\n", id);
     }
@@ -75,7 +83,7 @@ void buscarEmpleado(sqlite3 *db) {
 void editarEmpleado(sqlite3 *db) {
     char id[50];
     char sql_select[] = "SELECT * FROM Empleados WHERE id_empleado = ?;";
-    char sql_update[] = "UPDATE Empleados SET nombre = ?, dni = ?, telefono = ?, cargo = ? WHERE id_empleado = ?;";
+    char sql_update[] = "UPDATE Empleados SET nombre = ?, dni = ?, telefono = ?, cargo = ?, usuario = ?, contrasena = ? WHERE id_empleado = ?;";
     sqlite3_stmt *stmt;
     empleado emp;
 
@@ -107,7 +115,10 @@ void editarEmpleado(sqlite3 *db) {
     scanf("%s", emp.Telefono_E);
     printf("Cargo [%s]: ", sqlite3_column_text(stmt, 4));
     scanf(" [^\n]", emp.Cargo);
-
+    printf("Usuario [%s]: ", sqlite3_column_text(stmt, 5));
+    scanf("%s", emp.Usuario);
+    printf("Contraseña [%s]: ", sqlite3_column_text(stmt, 6));
+    scanf("%s", emp.Contrasena);
     sqlite3_finalize(stmt);
 
     // Actualizamos
@@ -120,7 +131,9 @@ void editarEmpleado(sqlite3 *db) {
     sqlite3_bind_text(stmt, 2, emp.DNI_E, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 3, emp.Telefono_E, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 4, emp.Cargo, -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 5, id, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, emp.Usuario, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 6, emp.Contrasena, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 7, id, -1, SQLITE_STATIC);
 
     if(sqlite3_step(stmt) != SQLITE_DONE) {
         fprintf(stderr, "Error actualizando empleado: %s\n", sqlite3_errmsg(db));
@@ -178,17 +191,18 @@ void listarEmpleados(sqlite3 *db) {
         return;
     }
 
-    printf("\n%-10s %-20s %-10s %-12s %-15s\n", 
-           "ID", "Nombre", "DNI", "Teléfono", "Cargo");
+    printf("\n%-10s %-20s %-10s %-12s %-15s %-15s %-15s\n", "ID", "Nombre", "DNI", "Teléfono", "Cargo", "Usuario", "Contraseña");
     printf("------------------------------------------------------------\n");
 
     while((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        printf("%-10s %-20s %-10s %-12s %-15s\n",
-               sqlite3_column_text(stmt, 0),
-               sqlite3_column_text(stmt, 1),
-               sqlite3_column_text(stmt, 2),
-               sqlite3_column_text(stmt, 3),
-               sqlite3_column_text(stmt, 4));
+        printf("%-10s %-20s %-10s %-12s %-15s %-15s %-15s\n",
+            sqlite3_column_text(stmt, 0),
+            sqlite3_column_text(stmt, 1),
+            sqlite3_column_text(stmt, 2),
+            sqlite3_column_text(stmt, 3),
+            sqlite3_column_text(stmt, 4),
+            sqlite3_column_text(stmt, 5),
+            sqlite3_column_text(stmt, 6));
     }
 
     if(rc != SQLITE_DONE) {
