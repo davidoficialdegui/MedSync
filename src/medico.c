@@ -77,6 +77,8 @@ void buscarMedico(sqlite3 *db) {
         printf("DNI: %s\n", sqlite3_column_text(stmt, 2));
         printf("Teléfono: %s\n", sqlite3_column_text(stmt, 3));
         printf("Especialidad: %s\n", sqlite3_column_text(stmt, 4));
+        printf("Usuario: %s\n", sqlite3_column_text(stmt, 5));
+        printf("Contrasena: %s\n", sqlite3_column_text(stmt, 6));
     } else {
         printf("\nNo se encontró médico con ID: %s\n", id);
     }
@@ -89,7 +91,7 @@ void buscarMedico(sqlite3 *db) {
 void editarMedico(sqlite3 *db) {
     char id[50];
     char sql_select[] = "SELECT * FROM Medicos WHERE id_medico = ?;";
-    char sql_update[] = "UPDATE Medicos SET nombre = ?, dni = ?, telefono = ?, especialidad = ? WHERE id_medico = ?;";
+    char sql_update[] = "UPDATE Medicos SET nombre = ?, dni = ?, telefono = ?, especialidad = ?, usuario = ?, contrasena = ? WHERE id_medico = ?;";
     sqlite3_stmt *stmt;
     medico med;
 
@@ -123,6 +125,10 @@ void editarMedico(sqlite3 *db) {
     scanf("%s", med.Telefono_M);
     printf("Especialidad [%s]: ", sqlite3_column_text(stmt, 4));
     fgets(med.Especialidad, sizeof(med.Especialidad), stdin);
+    printf("Usuario [%s]: ", sqlite3_column_text(stmt, 5));
+    scanf("%s", med.Usuario);
+    printf("Contraseña [%s]: ", sqlite3_column_text(stmt, 6));
+    scanf("%s", med.Contrasena);
 
     if (stmt) {
         sqlite3_finalize(stmt);
@@ -138,7 +144,9 @@ void editarMedico(sqlite3 *db) {
     sqlite3_bind_text(stmt, 2, med.DNI_M, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 3, med.Telefono_M, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 4, med.Especialidad, -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 5, id, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, med.Usuario, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 6, med.Contrasena, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 7, id, -1, SQLITE_STATIC);
 
     if(sqlite3_step(stmt) != SQLITE_DONE) {
         fprintf(stderr, "Error actualizando médico: %s\n", sqlite3_errmsg(db));
@@ -200,17 +208,18 @@ void listarMedicos(sqlite3 *db) {
         return;
     }
 
-    printf("\n%-10s %-20s %-10s %-12s %-15s\n", 
-           "ID", "Nombre", "DNI", "Teléfono", "Especialidad");
+    printf("\n%-10s %-20s %-10s %-12s %-15s %-15s %-15s\n", "ID", "Nombre", "DNI", "Teléfono", "Especialidad", "Usuario", "Contrasena");
     printf("------------------------------------------------------------\n");
 
     while((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        printf("%-10s %-20s %-10s %-12s %-15s\n",
-               sqlite3_column_text(stmt, 0),
-               sqlite3_column_text(stmt, 1),
-               sqlite3_column_text(stmt, 2),
-               sqlite3_column_text(stmt, 3),
-               sqlite3_column_text(stmt, 4));
+        printf("%-10s %-20s %-10s %-12s %-15s %-15s %-15s\n",
+            sqlite3_column_text(stmt, 0),
+            sqlite3_column_text(stmt, 1),
+            sqlite3_column_text(stmt, 2),
+            sqlite3_column_text(stmt, 3),
+            sqlite3_column_text(stmt, 4),
+            sqlite3_column_text(stmt, 5),
+            sqlite3_column_text(stmt, 6));
     }
 
     if(rc != SQLITE_DONE) {
