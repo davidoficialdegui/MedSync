@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build MedSyncApp",
+      "type": "shell",
+      "command": "gcc",
+      "args": [
+        "src/main.c",
+        "src/bd.c",
+        "src/paciente.c",
+        "src/medico.c",
+        "src/citas.c",
+        "src/historial_medico.c",
+        "src/reportes.c",
+        "src/autenticacion.c",
+        "src/admin.c",
+        "src/sqlite3.c",
+        "-Isrc",
+        "-o",
+        "MedSyncApp",
+        "-DSQLITE_THREADSAFE=0"
+      ],
+      "group": "build"
+    }
+  ]
+}
