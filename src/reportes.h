@@ -1,27 +1,12 @@
 #ifndef REPORTES_H
 #define REPORTES_H
 
-#include "sqlite3.h"
-#include <time.h>
+#include <sqlite3.h>
 
-#define MAX_REPORTES 100
-
-typedef struct {
-    int Id_Reporte;         
-    char Descripcion[255];  
-    char Fecha_R[11];       
-    int Id_Paciente;       
-    int Id_Empleado;        
-    int Id_Medico;         
-} Reporte;
-
-int abrirBDReportes(const char *nombre_bd);
-void cerrarBDPaciente();
-void generarReporte(const char *tipo_reporte, const char *descripcion, int Id_Paciente, int Id_Empleado, int Id_Medico);
-void consultarReportes();
-void generarReporteCitasProgramadas();
-void generarReporteHistorialesMedicos();
-void mostrarReporteCitas();
-void mostrarReporteHistoriales();
+int reporte_citas_por_medico(sqlite3 *db);
+int reporte_historial_paciente(sqlite3 *db, int paciente_id);
+int reporte_usuario_create(sqlite3 *db, int paciente_id, const char *problema);
+int reporte_usuario_list(sqlite3 *db, int paciente_id);
+int reporte_usuario_list_all(sqlite3 *db);
 
 #endif 
