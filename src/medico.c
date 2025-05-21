@@ -6,7 +6,7 @@
 
 void registrarMedico(sqlite3 *db) {
     medico nuevo;
-    char sql[] = "INSERT INTO Medicos (id_medico, nombre, dni, telefono, especialidad) VALUES (?, ?, ?, ?, ?);";
+    char sql[] = "INSERT INTO Medicos (id_medico, nombre, dni, telefono, especialidad, usuario, contraseña) VALUES (?, ?, ?, ?, ?, ?, ?);";
     sqlite3_stmt *stmt;
 
     printf("\n--- Registrar Nuevo Médico ---\n");
@@ -21,6 +21,10 @@ void registrarMedico(sqlite3 *db) {
     scanf("%s", nuevo.Telefono_M);
     printf("Especialidad: ");
     fgets(nuevo.Especialidad, sizeof(nuevo.Especialidad), stdin);
+    printf("Usuario: ");
+    scanf("%s", nuevo.Usuario);
+    printf("Contraseña: ");
+    scanf("%s", nuevo.Contrasena);
 
     if(sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
         fprintf(stderr, "Error preparando la consulta: %s\n", sqlite3_errmsg(db));
@@ -32,6 +36,8 @@ void registrarMedico(sqlite3 *db) {
     sqlite3_bind_text(stmt, 3, nuevo.DNI_M, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 4, nuevo.Telefono_M, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 5, nuevo.Especialidad, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 6, nuevo.Usuario, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 7, nuevo.Contrasena, -1, SQLITE_STATIC);
 
     if(sqlite3_step(stmt) != SQLITE_DONE) {
         fprintf(stderr, "Error insertando médico: %s\n", sqlite3_errmsg(db));
