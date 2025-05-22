@@ -2,14 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sqlite3.h>
-#include "bd.h"
-#include "autenticacion.h"
 #include "paciente.h"
 #include "medico.h"
-#include "citas.h"
-#include "historial_medico.h"
 #include "reportes.h"
-#include "admin.h"
+
 
 
 
@@ -270,4 +266,4 @@ int main(void) {
 
     bd_close(db);
     return 0;
-}
+}*/
