@@ -1,6 +1,7 @@
+// Socket.cpp
 #include "Socket.hpp"
-#include <iostream>
 #include <cstring>
+#include <cerrno>
 
 static void _throw(const std::string& where) {
 #ifdef _WIN32
@@ -10,6 +11,8 @@ static void _throw(const std::string& where) {
     throw SocketException(where + ": " + std::strerror(errno));
 #endif
 }
+
+Socket::Socket(): fd(INVALID_FD) {}
 
 Socket::~Socket() {
     if (fd != INVALID_FD) {
@@ -32,7 +35,7 @@ SocketCliente::SocketCliente(const std::string& ip, uint16_t puerto)
         _throw("WSAStartup()");
 #endif
 
-    fd = socket(AF_INET, SOCK_STREAM, 0);
+    fd = ::socket(AF_INET, SOCK_STREAM, 0);
     if (fd == INVALID_FD) _throw("socket()");
 
     sockaddr_in addr{};
@@ -73,7 +76,7 @@ SocketServidor::SocketServidor(uint16_t puerto, int _backlog)
         _throw("WSAStartup()");
 #endif
 
-    fd = socket(AF_INET, SOCK_STREAM, 0);
+    fd = ::socket(AF_INET, SOCK_STREAM, 0);
     if (fd == INVALID_FD) _throw("socket()");
 
     int opt = 1;

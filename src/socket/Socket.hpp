@@ -1,37 +1,35 @@
+// Socket.hpp
 #pragma once
+#include <exception>
 #include <string>
-#include <stdexcept>
+#include <cstdint>
 
 #ifdef _WIN32
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
-    #pragma comment(lib, "ws2_32.lib")
-    using socket_t = SOCKET;
-    const socket_t INVALID_FD = INVALID_SOCKET;
+  #include <winsock2.h>
+  #include <ws2tcpip.h>
+  typedef SOCKET socket_t;
+  static const socket_t INVALID_FD = INVALID_SOCKET;
 #else
-    #include <unistd.h>
-    #include <arpa/inet.h>
-    #include <netinet/in.h>
-    #include <sys/socket.h>
-    using socket_t = int;
-    const socket_t INVALID_FD = -1;
+  #include <sys/socket.h>
+  #include <arpa/inet.h>
+  #include <unistd.h>
+  typedef int socket_t;
+  static const socket_t INVALID_FD = -1;
 #endif
 
-class SocketException : public std::runtime_error {
+class SocketException : public std::exception {
+    std::string msg;
 public:
-    explicit SocketException(const std::string& msg) : std::runtime_error(msg) {}
+    explicit SocketException(const std::string& s): msg(s) {}
+    const char* what() const noexcept override { return msg.c_str(); }
 };
 
 class Socket {
 protected:
-    socket_t fd{INVALID_FD};
-    explicit Socket(socket_t _fd) : fd(_fd) {}
+    socket_t fd;
+    Socket();
 public:
-    Socket() = default;
     virtual ~Socket();
-    Socket(const Socket&) = delete;
-    Socket& operator=(const Socket&) = delete;
-    socket_t getFd() const { return fd; }
 };
 
 class SocketCliente : public Socket {
@@ -44,6 +42,6 @@ public:
 class SocketServidor : public Socket {
     int backlog;
 public:
-    explicit SocketServidor(uint16_t puerto, int _backlog = 10);
+    explicit SocketServidor(uint16_t puerto, int backlog = 5);
     socket_t aceptar() const;
 };
