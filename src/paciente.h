@@ -45,3 +45,4 @@ int paciente_update(sqlite3 *db,
 int paciente_delete(sqlite3 *db, int id);
 
 #endif // PACIENTE_H
+

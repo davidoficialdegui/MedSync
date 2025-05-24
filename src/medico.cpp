@@ -23,7 +23,7 @@ int medico_delete(sqlite3 *db, int id);
 
 // ------------------------FIN DE CODIGO EN C----------------------------
 
-#include "medico.h"
+/*#include "medico.h"
 #include <iostream>
 #include <string>
 
@@ -68,4 +68,83 @@ int medico_update(sqlite3 *db, int id,
 int medico_delete(sqlite3 *db, int id) {
     string sql = "DELETE FROM medico WHERE id=" + to_string(id) + ";";
     return bd_exec(db, sql.c_str());
+}*/
+
+
+#include "medico.h"
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+static int medico_callback(void *data, int cols, char **values, char **names) {
+    for (int i = 0; i < cols; i++) {
+        cout << names[i] << " = " << (values[i] ? values[i] : "NULL") << "\t";
+    }
+    cout << endl;
+    return 0;
+}
+
+int medico_create(sqlite3 *db,
+                 const string &nombre,
+                 const string &especialidad,
+                 const string &telefono,
+                 const string &email) {
+    char *errMsg = nullptr;
+    string sql = "INSERT INTO medico(nombre,especialidad,telefono,email) VALUES('" +
+                nombre + "','" + especialidad + "','" + telefono + "','" + email + "');";
+    
+    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
+    if (rc != SQLITE_OK) {
+        cerr << "Error al crear médico: " << errMsg << endl;
+        sqlite3_free(errMsg);
+        return 1;
+    }
+    return 0;
+}
+
+int medico_list(sqlite3 *db) {
+    char *errMsg = nullptr;
+    int rc = sqlite3_exec(db, "SELECT id,nombre,especialidad,telefono,email FROM medico;", 
+                         medico_callback, nullptr, &errMsg);
+    if (rc != SQLITE_OK) {
+        cerr << "Error al listar médicos: " << errMsg << endl;
+        sqlite3_free(errMsg);
+        return 1;
+    }
+    return 0;
+}
+
+int medico_update(sqlite3 *db, int id,
+                 const string &nombre,
+                 const string &especialidad,
+                 const string &telefono,
+                 const string &email) {
+    char *errMsg = nullptr;
+    string sql = "UPDATE medico SET nombre='" + nombre + 
+                 "',especialidad='" + especialidad + 
+                 "',telefono='" + telefono + 
+                 "',email='" + email + 
+                 "' WHERE id=" + to_string(id) + ";";
+    
+    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
+    if (rc != SQLITE_OK) {
+        cerr << "Error al actualizar médico: " << errMsg << endl;
+        sqlite3_free(errMsg);
+        return 1;
+    }
+    return 0;
+}
+
+int medico_delete(sqlite3 *db, int id) {
+    char *errMsg = nullptr;
+    string sql = "DELETE FROM medico WHERE id=" + to_string(id) + ";";
+    
+    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
+    if (rc != SQLITE_OK) {
+        cerr << "Error al eliminar médico: " << errMsg << endl;
+        sqlite3_free(errMsg);
+        return 1;
+    }
+    return 0;
 }

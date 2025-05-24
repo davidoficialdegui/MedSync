@@ -40,6 +40,14 @@ int medico_delete(sqlite3 *db, int id) {
     return bd_exec(db, sql);
 }*/
 
+
+
+// ------------------------FIN DE CODIGO EN C----------------------------
+
+
+
+
+
 #ifndef MEDICO_H
 #define MEDICO_H
 

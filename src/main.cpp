@@ -268,6 +268,13 @@ int main(void) {
     return 0;
 }*/
 
+
+
+
+// ------------------------FIN DE CODIGO EN C----------------------------
+
+
+/*
 #include <iostream>
 #include <string>
 #include <vector>
@@ -366,7 +373,9 @@ static void menu_paciente(sqlite3 *db, int user_id) {
             case 1: {
                 char sql[256];
                 snprintf(sql, sizeof(sql), "SELECT id, fecha_hora, motivo FROM cita WHERE paciente_id=%d;", user_id);
-                bd_query(db, sql, generalLlamadaDeVuelta, nullptr);
+                if (sqlite3_exec(db, sql, generalLlamadaDeVuelta, nullptr, nullptr) != SQLITE_OK) {
+                    cerr << "Error al ejecutar la consulta: " << sqlite3_errmsg(db) << endl;
+                }
                 break;
             }
             case 2:
@@ -534,5 +543,152 @@ int main() {
     }
 
     bd_close(db);
+    return 0;
+}*/
+
+//VERSION SIMPLIFICADA
+
+
+#include <iostream>
+#include <string>
+#include <sqlite3.h>
+#include "paciente.h"
+#include "medico.h"
+#include "reportes.h"
+
+using namespace std;
+
+static int generalLlamadaDeVuelta(void *data, int cols, char **values, char **names) {
+    for (int i = 0; i < cols; i++) {
+        cout << names[i] << ": " << (values[i] ? values[i] : "NULL") << "\t";
+    }
+    cout << endl;
+    return 0;
+}
+
+static int init_database(sqlite3 *db) {
+    char *errMsg = nullptr;
+    const char *sql =
+        "PRAGMA foreign_keys = ON;"
+        "CREATE TABLE IF NOT EXISTS paciente ("
+        "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "  nombre TEXT NOT NULL,"
+        "  apellidos TEXT NOT NULL,"
+        "  fecha_nac DATE NOT NULL,"
+        "  genero TEXT CHECK(genero IN ('M','F','O')) NOT NULL,"
+        "  telefono TEXT,"
+        "  email TEXT"
+        ");"
+        "CREATE TABLE IF NOT EXISTS medico ("
+        "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "  nombre TEXT NOT NULL,"
+        "  especialidad TEXT NOT NULL,"
+        "  telefono TEXT,"
+        "  email TEXT"
+        ");"
+        "CREATE TABLE IF NOT EXISTS usuarios ("
+        "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "  username TEXT UNIQUE NOT NULL,"
+        "  password TEXT NOT NULL,"
+        "  role TEXT CHECK(role IN ('admin','medico','paciente')) NOT NULL"
+        ");"
+        "CREATE TABLE IF NOT EXISTS cita ("
+        "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "  paciente_id INTEGER NOT NULL,"
+        "  medico_id INTEGER NOT NULL,"
+        "  fecha_hora DATETIME NOT NULL,"
+        "  motivo TEXT,"
+        "  FOREIGN KEY(paciente_id) REFERENCES paciente(id) ON DELETE CASCADE,"
+        "  FOREIGN KEY(medico_id) REFERENCES medico(id) ON DELETE CASCADE"
+        ");"
+        "CREATE TABLE IF NOT EXISTS historial_medico ("
+        "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "  paciente_id INTEGER NOT NULL,"
+        "  fecha DATETIME NOT NULL,"
+        "  descripcion TEXT NOT NULL,"
+        "  FOREIGN KEY(paciente_id) REFERENCES paciente(id) ON DELETE CASCADE"
+        ");"
+        "CREATE TABLE IF NOT EXISTS reportes ("
+        "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "  paciente_id INTEGER NOT NULL,"
+        "  fecha DATETIME NOT NULL DEFAULT (datetime('now')),"
+        "  problema TEXT NOT NULL,"
+        "  estado TEXT CHECK(estado IN ('abierto','cerrado')) NOT NULL DEFAULT 'abierto',"
+        "  respuesta TEXT,"
+        "  FOREIGN KEY(paciente_id) REFERENCES paciente(id) ON DELETE CASCADE"
+        ");";
+    
+    int rc = sqlite3_exec(db, sql, nullptr, nullptr, &errMsg);
+    if (rc != SQLITE_OK) {
+        cerr << "Error al inicializar tablas: " << errMsg << endl;
+        sqlite3_free(errMsg);
+        return 1;
+    }
+    
+    // Crear usuario admin por defecto
+    const char *admin_sql = "INSERT OR IGNORE INTO usuarios(username,password,role) VALUES('admin','admin','admin');";
+    rc = sqlite3_exec(db, admin_sql, nullptr, nullptr, &errMsg);
+    if (rc != SQLITE_OK) {
+        cerr << "Error al crear admin por defecto: " << errMsg << endl;
+        sqlite3_free(errMsg);
+    }
+    
+    return 0;
+}
+
+int main() {
+    sqlite3 *db;
+    int rc = sqlite3_open("bd/MedSync.db", &db);
+    if (rc != SQLITE_OK) {
+        cerr << "Error al abrir la BD: " << sqlite3_errmsg(db) << endl;
+        return 1;
+    }
+
+    if (init_database(db) != 0) {
+        sqlite3_close(db);
+        return 1;
+    }
+
+
+    cout << "Sistema MedSync\n";
+    cout << "1. Listar pacientes\n";
+    cout << "2. Crear paciente\n";
+    cout << "3. Listar médicos\n";
+    cout << "4. Crear médico\n";
+    cout << "5. Salir\n";
+    cout << "Opción: ";
+    
+    int opcion;
+    cin >> opcion;
+    cin.ignore();
+    
+    string nombre, apellidos, fecha, genero, telefono, email, especialidad;
+    
+    switch(opcion) {
+        case 1:
+            paciente_list(db);
+            break;
+        case 2:
+            cout << "Nombre: "; getline(cin, nombre);
+            cout << "Apellidos: "; getline(cin, apellidos);
+            cout << "Fecha (YYYY-MM-DD): "; getline(cin, fecha);
+            cout << "Género (M/F/O): "; getline(cin, genero);
+            cout << "Teléfono: "; getline(cin, telefono);
+            cout << "Email: "; getline(cin, email);
+            paciente_create(db, nombre, apellidos, fecha, genero, telefono, email);
+            break;
+        case 3:
+            medico_list(db);
+            break;
+        case 4:
+            cout << "Nombre: "; getline(cin, nombre);
+            cout << "Especialidad: "; getline(cin, especialidad);
+            cout << "Teléfono: "; getline(cin, telefono);
+            cout << "Email: "; getline(cin, email);
+            medico_create(db, nombre, especialidad, telefono, email);
+            break;
+    }
+
+    sqlite3_close(db);
     return 0;
 }
