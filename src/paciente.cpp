@@ -44,6 +44,11 @@ int paciente_delete(sqlite3 *db, int id) {
     return bd_exec(db, sql);
 }*/
 
+
+
+
+// ------------------------FIN DE CODIGO EN C----------------------------
+
 #include "paciente.h"
 #include <iostream>
 #include <string>

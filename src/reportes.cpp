@@ -56,6 +56,12 @@ int reporte_usuario_list_all(sqlite3 *db) {
     return bd_query(db, sql, rpt_cb, NULL);
 }*/
 
+
+// ------------------------FIN DE CODIGO EN C----------------------------
+
+
+
+
 #include "reportes.h"
 #include <iostream>
 #include <string>

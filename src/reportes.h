@@ -11,6 +11,11 @@ int reporte_usuario_list_all(sqlite3 *db);
 
 #endif */
 
+
+// ------------------------FIN DE CODIGO EN C----------------------------
+
+
+
 #ifndef REPORTES_H
 #define REPORTES_H
 

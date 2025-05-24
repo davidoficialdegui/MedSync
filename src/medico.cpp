@@ -20,6 +20,9 @@ int medico_delete(sqlite3 *db, int id);
 
 #endif // MEDICO_H*/
 
+
+// ------------------------FIN DE CODIGO EN C----------------------------
+
 #include "medico.h"
 #include <iostream>
 #include <string>

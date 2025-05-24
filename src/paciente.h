@@ -11,6 +11,14 @@ int paciente_delete(sqlite3 *db, int id);
 
 #endif // PACIENTE_H */
 
+
+
+
+// ------------------------FIN DE CODIGO EN C----------------------------
+
+
+
+
 #ifndef PACIENTE_H
 #define PACIENTE_H
 
