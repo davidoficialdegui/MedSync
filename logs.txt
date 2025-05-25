@@ -48,3 +48,4 @@
 [Sun May 25 20:57:36 2025] Usuario: medico1 - Acción: Cierre normal del sistema
 [Sun May 25 20:57:56 2025] Usuario: medico1 - Acción: Inicio de sesión
 [Sun May 25 20:57:59 2025] Usuario: medico1 - Acción: Medico - Ver mis citas
+[Sun May 25 21:10:53 2025] Usuario: medico1 - Acción: Medico - Ver mis citas
