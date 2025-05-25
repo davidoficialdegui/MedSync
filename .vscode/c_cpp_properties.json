@@ -1,16 +1,23 @@
 {
+  "version": 4,
   "configurations": [
     {
-      "name": "Win32",
-      "includePath": [
-        "${workspaceFolder}/src",     // busca headers directamente en src
-        "${workspaceFolder}/src/**"   // e indexa recursivamente todas las subcarpetas
-      ],
-      "compilerPath": "C:/MinGW/bin/g++.exe",
-      "cStandard":   "c11",
+      "name": "MedSyc-C++",
+      "compilerPath": "C:/MinGW/bin/g++.exe",        // tu g++ o clang++
+      "cStandard": "c11",
       "cppStandard": "c++17",
-      "intelliSenseMode": "windows-gcc-x64"
+      "intelliSenseMode": "gcc-x64",                // o "msvc-x64" si usas MSVC
+      "includePath": [
+        "${workspaceFolder}/src",                   // aquí están todos tus .hpp/.h
+        "${workspaceFolder}/src/**"                 // con ** incluyes subcarpetas
+      ],
+      "browse": {
+        "path": [
+          "${workspaceFolder}/src",
+          "${workspaceFolder}/src/**"
+        ],
+        "limitSymbolsToIncludedHeaders": true
+      }
     }
-  ],
-  "version": 4
+  ]
 }

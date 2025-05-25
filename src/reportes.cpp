@@ -1,210 +1,97 @@
 
-/*#include "reportes.h"
-#include <stdio.h>
+#include "reportes.hpp"
+#include <sqlite3.h>
+#include <sstream>
+#include <stdexcept>
+#include <ctime>
 
+namespace MedSyc {
 
-static int rpt_cb(void *data, int cols, char **values, char **names) {
-    for (int i = 0; i < cols; i++) {
-        printf("%s = %s\t", names[i], values[i] ? values[i] : "NULL");
+Reportes::Reportes(sqlite3 *db)
+  : db_(db)
+{ }
+
+std::string Reportes::reportePaciente(int paciente_id) {
+    std::stringstream ss;
+    ss << "Reporte Paciente ID: " << paciente_id << "\n";
+
+    sqlite3_stmt *stmt = nullptr;
+    const char *sqlPac =
+        "SELECT nombre, dni FROM pacientes WHERE id = ?;";
+    if (sqlite3_prepare_v2(db_, sqlPac, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error(sqlite3_errmsg(db_));
     }
-    printf("\n");
-    return 0;
+    sqlite3_bind_int(stmt, 1, paciente_id);
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        ss << "Nombre: " << reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)) << "\n";
+        ss << "DNI:    " << reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)) << "\n";
+    } else {
+        sqlite3_finalize(stmt);
+        throw std::runtime_error("Paciente no encontrado");
+    }
+    sqlite3_finalize(stmt);
+
+    ss << "\nCitas:\n";
+    const char *sqlCitas =
+        "SELECT fecha, motivo FROM citas WHERE paciente_id = ? ORDER BY fecha;";
+    if (sqlite3_prepare_v2(db_, sqlCitas, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error(sqlite3_errmsg(db_));
+    }
+    sqlite3_bind_int(stmt, 1, paciente_id);
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        std::time_t fecha = static_cast<std::time_t>(sqlite3_column_int64(stmt, 0));
+        ss << " - " << std::ctime(&fecha)
+           << "   Motivo: " << reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))
+           << "\n";
+    }
+    sqlite3_finalize(stmt);
+
+    ss << "\nHistorial Médico:\n";
+    const char *sqlHist =
+        "SELECT fecha, descripcion FROM historial_medico WHERE paciente_id = ? ORDER BY fecha;";
+    if (sqlite3_prepare_v2(db_, sqlHist, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error(sqlite3_errmsg(db_));
+    }
+    sqlite3_bind_int(stmt, 1, paciente_id);
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        std::time_t fecha = static_cast<std::time_t>(sqlite3_column_int64(stmt, 0));
+        ss << " - " << std::ctime(&fecha)
+           << "   " << reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1))
+           << "\n";
+    }
+    sqlite3_finalize(stmt);
+
+    return ss.str();
 }
 
-int reporte_citas_por_medico(sqlite3 *db) {
+std::string Reportes::reporteMedicos() {
+    std::stringstream ss;
+    ss << "Reporte de Médicos:\n";
+
+    sqlite3_stmt *stmt = nullptr;
     const char *sql =
-        "SELECT m.nombre || ' ('||m.especialidad||')' AS medico, "
-        "       COUNT(c.id) AS total_citas "
-        "FROM medico m "
-        "LEFT JOIN cita c ON m.id=c.medico_id "
-        "GROUP BY m.id;";
-    return bd_query(db, sql, rpt_cb, NULL);
-}
-
-int reporte_historial_paciente(sqlite3 *db, int paciente_id) {
-    char sql[256];
-    snprintf(sql, sizeof(sql),
-        "SELECT fecha, descripcion "
-        "FROM historial_medico "
-        "WHERE paciente_id=%d;", paciente_id);
-    return bd_query(db, sql, rpt_cb, NULL);
-}
-
-int reporte_usuario_create(sqlite3 *db, int paciente_id, const char *problema) {
-    char sql[512];
-    snprintf(sql, sizeof(sql),
-        "INSERT INTO reportes(paciente_id,problema) VALUES(%d,'%s');",
-        paciente_id, problema);
-    return bd_exec(db, sql);
-}
-
-int reporte_usuario_list(sqlite3 *db, int paciente_id) {
-    char sql[256];
-    snprintf(sql, sizeof(sql),
-        "SELECT id, fecha, problema, estado, respuesta "
-        "FROM reportes WHERE paciente_id=%d;", paciente_id);
-    return bd_query(db, sql, rpt_cb, NULL);
-}
-
-int reporte_usuario_list_all(sqlite3 *db) {
-    const char *sql =
-      "SELECT r.id, r.paciente_id, p.nombre||' '||p.apellidos AS paciente, "
-      "       r.fecha, r.problema, r.estado, r.respuesta "
-      "FROM reportes r "
-      "JOIN paciente p ON p.id=r.paciente_id "
-      "ORDER BY r.fecha DESC;";
-    return bd_query(db, sql, rpt_cb, NULL);
-}*/
-
-
-// ------------------------FIN DE CODIGO EN C----------------------------
-
-
-
-/*
-#include "reportes.h"
-#include <iostream>
-#include <string>
-
-using namespace std;
-
-static int rpt_cb(void *data, int cols, char **values, char **names) {
-    for (int i = 0; i < cols; i++) {
-        cout << names[i] << " = " << (values[i] ? values[i] : "NULL") << "\t";
+        "SELECT m.id, m.nombre, m.especialidad, COUNT(c.id) AS total_citas "
+        "FROM medicos m "
+        "LEFT JOIN citas c ON m.id = c.medico_id "
+        "GROUP BY m.id "
+        "ORDER BY total_citas DESC;";
+    if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error(sqlite3_errmsg(db_));
     }
-    cout << endl;
-    return 0;
-}
 
-int reporte_citas_por_medico(sqlite3 *db) {
-    const char *sql =
-        "SELECT m.nombre || ' ('||m.especialidad||')' AS medico, "
-        "       COUNT(c.id) AS total_citas "
-        "FROM medico m "
-        "LEFT JOIN cita c ON m.id=c.medico_id "
-        "GROUP BY m.id;";
-    return bd_query(db, sql, rpt_cb, nullptr);
-}
-
-int reporte_historial_paciente(sqlite3 *db, int paciente_id) {
-    string sql = "SELECT fecha, descripcion "
-                "FROM historial_medico "
-                "WHERE paciente_id=" + to_string(paciente_id) + ";";
-    return bd_query(db, sql.c_str(), rpt_cb, nullptr);
-}
-
-int reporte_usuario_create(sqlite3 *db, int paciente_id, const string &problema) {
-    string sql = "INSERT INTO reportes(paciente_id,problema) VALUES(" +
-                to_string(paciente_id) + ",'" + problema + "');";
-    return bd_exec(db, sql.c_str());
-}
-
-int reporte_usuario_list(sqlite3 *db, int paciente_id) {
-    string sql = "SELECT id, fecha, problema, estado, respuesta "
-                "FROM reportes WHERE paciente_id=" + to_string(paciente_id) + ";";
-    return bd_query(db, sql.c_str(), rpt_cb, nullptr);
-}
-
-int reporte_usuario_list_all(sqlite3 *db) {
-    const char *sql =
-      "SELECT r.id, r.paciente_id, p.nombre||' '||p.apellidos AS paciente, "
-      "       r.fecha, r.problema, r.estado, r.respuesta "
-      "FROM reportes r "
-      "JOIN paciente p ON p.id=r.paciente_id "
-      "ORDER BY r.fecha DESC;";
-    return bd_query(db, sql, rpt_cb, nullptr);
-}*/
-
-
-#include "reportes.h"
-#include <iostream>
-#include <string>
-
-using namespace std;
-
-static int rpt_cb(void *data, int cols, char **values, char **names) {
-    for (int i = 0; i < cols; i++) {
-        cout << names[i] << " = " << (values[i] ? values[i] : "NULL") << "\t";
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        int         id    = sqlite3_column_int(stmt, 0);
+        const char *nombre = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        const char *esp    = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+        int         cnt    = sqlite3_column_int(stmt, 3);
+        ss << "ID " << id
+           << " - " << nombre
+           << " (" << esp << ")"
+           << " => " << cnt << " citas\n";
     }
-    cout << endl;
-    return 0;
+    sqlite3_finalize(stmt);
+
+    return ss.str();
 }
 
-int reporte_citas_por_medico(sqlite3 *db) {
-    char *errMsg = nullptr;
-    const char *sql =
-        "SELECT m.nombre || ' ('||m.especialidad||')' AS medico, "
-        "       COUNT(c.id) AS total_citas "
-        "FROM medico m "
-        "LEFT JOIN cita c ON m.id=c.medico_id "
-        "GROUP BY m.id;";
-    
-    int rc = sqlite3_exec(db, sql, rpt_cb, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error en reporte citas por médico: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
-    }
-    return 0;
-}
-
-int reporte_historial_paciente(sqlite3 *db, int paciente_id) {
-    char *errMsg = nullptr;
-    string sql = "SELECT fecha, descripcion "
-                "FROM historial_medico "
-                "WHERE paciente_id=" + to_string(paciente_id) + ";";
-    
-    int rc = sqlite3_exec(db, sql.c_str(), rpt_cb, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error en reporte historial paciente: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
-    }
-    return 0;
-}
-
-int reporte_usuario_create(sqlite3 *db, int paciente_id, const string &problema) {
-    char *errMsg = nullptr;
-    string sql = "INSERT INTO reportes(paciente_id,problema) VALUES(" +
-                to_string(paciente_id) + ",'" + problema + "');";
-    
-    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error al crear reporte: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
-    }
-    return 0;
-}
-
-int reporte_usuario_list(sqlite3 *db, int paciente_id) {
-    char *errMsg = nullptr;
-    string sql = "SELECT id, fecha, problema, estado, respuesta "
-                "FROM reportes WHERE paciente_id=" + to_string(paciente_id) + ";";
-    
-    int rc = sqlite3_exec(db, sql.c_str(), rpt_cb, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error al listar reportes: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
-    }
-    return 0;
-}
-
-int reporte_usuario_list_all(sqlite3 *db) {
-    char *errMsg = nullptr;
-    const char *sql =
-      "SELECT r.id, r.paciente_id, p.nombre||' '||p.apellidos AS paciente, "
-      "       r.fecha, r.problema, r.estado, r.respuesta "
-      "FROM reportes r "
-      "JOIN paciente p ON p.id=r.paciente_id "
-      "ORDER BY r.fecha DESC;";
-    
-    int rc = sqlite3_exec(db, sql, rpt_cb, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error al listar todos los reportes: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
-    }
-    return 0;
 }

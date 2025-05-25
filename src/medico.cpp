@@ -1,150 +1,73 @@
-/*#ifndef MEDICO_H
-#define MEDICO_H
 
-#include <sqlite3.h>
+#include "medico.hpp"
+#include <stdexcept>
 
-int medico_create(sqlite3 *db,
-                  const char *nombre,
-                  const char *especialidad,
-                  const char *telefono,
-                  const char *email);
+namespace MedSyc {
 
-int medico_list(sqlite3 *db);
-int medico_update(sqlite3 *db,
-                  int id,
-                  const char *nombre,
-                  const char *especialidad,
-                  const char *telefono,
-                  const char *email);
-int medico_delete(sqlite3 *db, int id);
+Medico::Medico(sqlite3* db)
+  : db_(db)
+{}
 
-#endif // MEDICO_H*/
-
-
-// ------------------------FIN DE CODIGO EN C----------------------------
-
-/*#include "medico.h"
-#include <iostream>
-#include <string>
-
-using namespace std;
-
-static int medico_callback(void *data, int cols, char **values, char **names) {
-    for (int i = 0; i < cols; i++) {
-        cout << names[i] << " = " << (values[i] ? values[i] : "NULL") << "\t";
+int Medico::crear(const std::string& nombre, const std::string& especialidad) {
+    sqlite3_stmt* stmt = nullptr;
+    constexpr char SQL[] =
+      "INSERT INTO medicos(nombre, especialidad) VALUES(?,?);";
+    if (sqlite3_prepare_v2(db_, SQL, -1, &stmt, nullptr) != SQLITE_OK) {
+        return sqlite3_errcode(db_);
     }
-    cout << endl;
-    return 0;
+    sqlite3_bind_text(stmt, 1, nombre.c_str(),       -1, nullptr);
+    sqlite3_bind_text(stmt, 2, especialidad.c_str(), -1, nullptr);
+
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    return (rc == SQLITE_DONE) ? SQLITE_OK : sqlite3_errcode(db_);
 }
 
-int medico_create(sqlite3 *db,
-                 const string &nombre,
-                 const string &especialidad,
-                 const string &telefono,
-                 const string &email) {
-    string sql = "INSERT INTO medico(nombre,especialidad,telefono,email) VALUES('" +
-                nombre + "','" + especialidad + "','" + telefono + "','" + email + "');";
-    return bd_exec(db, sql.c_str());
-}
-
-int medico_list(sqlite3 *db) {
-    return bd_query(db, "SELECT id,nombre,especialidad,telefono,email FROM medico;", 
-                   medico_callback, nullptr);
-}
-
-int medico_update(sqlite3 *db, int id,
-                 const string &nombre,
-                 const string &especialidad,
-                 const string &telefono,
-                 const string &email) {
-    string sql = "UPDATE medico SET nombre='" + nombre + 
-                 "',especialidad='" + especialidad + 
-                 "',telefono='" + telefono + 
-                 "',email='" + email + 
-                 "' WHERE id=" + to_string(id) + ";";
-    return bd_exec(db, sql.c_str());
-}
-
-int medico_delete(sqlite3 *db, int id) {
-    string sql = "DELETE FROM medico WHERE id=" + to_string(id) + ";";
-    return bd_exec(db, sql.c_str());
-}*/
-
-
-#include "medico.h"
-#include <iostream>
-#include <string>
-
-using namespace std;
-
-static int medico_callback(void *data, int cols, char **values, char **names) {
-    for (int i = 0; i < cols; i++) {
-        cout << names[i] << " = " << (values[i] ? values[i] : "NULL") << "\t";
+bool Medico::cargar(int id) {
+    sqlite3_stmt* stmt = nullptr;
+    constexpr char SQL[] =
+      "SELECT nombre, especialidad FROM medicos WHERE id = ?;";
+    if (sqlite3_prepare_v2(db_, SQL, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error(sqlite3_errmsg(db_));
     }
-    cout << endl;
-    return 0;
+    sqlite3_bind_int(stmt, 1, id);
+    bool ok = false;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        nombre_       = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        especialidad_ = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        ok = true;
+    }
+    sqlite3_finalize(stmt);
+    return ok;
 }
 
-int medico_create(sqlite3 *db,
-                 const string &nombre,
-                 const string &especialidad,
-                 const string &telefono,
-                 const string &email) {
-    char *errMsg = nullptr;
-    string sql = "INSERT INTO medico(nombre,especialidad,telefono,email) VALUES('" +
-                nombre + "','" + especialidad + "','" + telefono + "','" + email + "');";
-    
-    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error al crear médico: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
+bool Medico::actualizar(int id, const std::string& nombre, const std::string& especialidad) {
+    sqlite3_stmt* stmt = nullptr;
+    constexpr char SQL[] =
+      "UPDATE medicos SET nombre = ?, especialidad = ? WHERE id = ?;";
+    if (sqlite3_prepare_v2(db_, SQL, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error(sqlite3_errmsg(db_));
     }
-    return 0;
+    sqlite3_bind_text(stmt, 1, nombre.c_str(),       -1, nullptr);
+    sqlite3_bind_text(stmt, 2, especialidad.c_str(), -1, nullptr);
+    sqlite3_bind_int (stmt, 3, id);
+
+    bool ok = (sqlite3_step(stmt) == SQLITE_DONE);
+    sqlite3_finalize(stmt);
+    return ok;
 }
 
-int medico_list(sqlite3 *db) {
-    char *errMsg = nullptr;
-    int rc = sqlite3_exec(db, "SELECT id,nombre,especialidad,telefono,email FROM medico;", 
-                         medico_callback, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error al listar médicos: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
+bool Medico::eliminar(int id) {
+    sqlite3_stmt* stmt = nullptr;
+    constexpr char SQL[] =
+      "DELETE FROM medicos WHERE id = ?;";
+    if (sqlite3_prepare_v2(db_, SQL, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error(sqlite3_errmsg(db_));
     }
-    return 0;
+    sqlite3_bind_int(stmt, 1, id);
+    bool ok = (sqlite3_step(stmt) == SQLITE_DONE);
+    sqlite3_finalize(stmt);
+    return ok;
 }
 
-int medico_update(sqlite3 *db, int id,
-                 const string &nombre,
-                 const string &especialidad,
-                 const string &telefono,
-                 const string &email) {
-    char *errMsg = nullptr;
-    string sql = "UPDATE medico SET nombre='" + nombre + 
-                 "',especialidad='" + especialidad + 
-                 "',telefono='" + telefono + 
-                 "',email='" + email + 
-                 "' WHERE id=" + to_string(id) + ";";
-    
-    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error al actualizar médico: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
-    }
-    return 0;
-}
-
-int medico_delete(sqlite3 *db, int id) {
-    char *errMsg = nullptr;
-    string sql = "DELETE FROM medico WHERE id=" + to_string(id) + ";";
-    
-    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error al eliminar médico: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
-    }
-    return 0;
-}
+} 

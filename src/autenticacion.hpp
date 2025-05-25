@@ -1,0 +1,32 @@
+#ifndef MEDSYC_AUTENTICACION_HPP
+#define MEDSYC_AUTENTICACION_HPP
+
+#include <string>
+#include <sqlite3.h>
+
+namespace MedSyc {
+
+class Autenticacion {
+public:
+    explicit Autenticacion(sqlite3* db);
+
+    
+    bool login(const std::string& user, const std::string& pass);
+
+    void logout();
+    bool estaAutenticado() const;
+
+    
+    int         userId() const { return userId_; }
+    const std::string& role() const { return role_; }
+
+private:
+    sqlite3*    db_;
+    bool        autenticado_;
+    int         userId_;
+    std::string role_;
+};
+
+} 
+
+#endif 

@@ -1,189 +1,73 @@
-/*#include "paciente.h"
-#include <stdio.h>
 
-static int paciente_callback(void *data, int cols, char **values, char **names) {
-    for (int i = 0; i < cols; i++) printf("%s = %s\t", names[i], values[i] ? values[i] : "NULL");
-    printf("\n");
-    return 0;
-}
+#include "paciente.hpp"
+#include <stdexcept>
 
-int paciente_create(sqlite3 *db,
-                    const char *nombre,
-                    const char *apellidos,
-                    const char *fecha_nac,
-                    const char *genero,
-                    const char *telefono,
-                    const char *email) {
-    char sql[512];
-    snprintf(sql, sizeof(sql),
-             "INSERT INTO paciente(nombre,apellidos,fecha_nac,genero,telefono,email) VALUES('%s','%s','%s','%s','%s','%s');",
-             nombre, apellidos, fecha_nac, genero, telefono, email);
-    return bd_exec(db, sql);
-}
+namespace MedSyc {
 
-int paciente_list(sqlite3 *db) {
-    return bd_query(db, "SELECT id,nombre,apellidos,fecha_nac,genero,telefono,email FROM paciente;", paciente_callback, NULL);
-}
+Paciente::Paciente(sqlite3* db)
+  : db_(db)
+{}
 
-int paciente_update(sqlite3 *db, int id,
-                    const char *nombre,
-                    const char *apellidos,
-                    const char *fecha_nac,
-                    const char *genero,
-                    const char *telefono,
-                    const char *email) {
-    char sql[512];
-    snprintf(sql, sizeof(sql),
-             "UPDATE paciente SET nombre='%s',apellidos='%s',fecha_nac='%s',genero='%s',telefono='%s',email='%s' WHERE id=%d;",
-             nombre, apellidos, fecha_nac, genero, telefono, email, id);
-    return bd_exec(db, sql);
-}
-
-int paciente_delete(sqlite3 *db, int id) {
-    char sql[128]; snprintf(sql, sizeof(sql), "DELETE FROM paciente WHERE id=%d;", id);
-    return bd_exec(db, sql);
-}*/
-
-
-
-
-// ------------------------FIN DE CODIGO EN C----------------------------
-
-/*#include "paciente.h"
-#include <iostream>
-#include <string>
-
-using namespace std;
-
-static int paciente_callback(void *data, int cols, char **values, char **names) {
-    for (int i = 0; i < cols; i++) {
-        cout << names[i] << " = " << (values[i] ? values[i] : "NULL") << "\t";
+int Paciente::crear(const std::string& nombre, const std::string& dni) {
+    sqlite3_stmt* stmt = nullptr;
+    constexpr char SQL[] =
+      "INSERT INTO pacientes(nombre, dni) VALUES(?,?);";
+    if (sqlite3_prepare_v2(db_, SQL, -1, &stmt, nullptr) != SQLITE_OK) {
+        return sqlite3_errcode(db_);
     }
-    cout << endl;
-    return 0;
+    sqlite3_bind_text(stmt, 1, nombre.c_str(), -1, nullptr);
+    sqlite3_bind_text(stmt, 2, dni.c_str(), -1, nullptr);
+
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    return (rc == SQLITE_DONE) ? SQLITE_OK : sqlite3_errcode(db_);
 }
 
-int paciente_create(sqlite3 *db,
-                   const string &nombre,
-                   const string &apellidos,
-                   const string &fecha_nac,
-                   const string &genero,
-                   const string &telefono,
-                   const string &email) {
-    string sql = "INSERT INTO paciente(nombre,apellidos,fecha_nac,genero,telefono,email) VALUES('" +
-                nombre + "','" + apellidos + "','" + fecha_nac + "','" + genero + "','" + 
-                telefono + "','" + email + "');";
-    return bd_exec(db, sql.c_str());
-}
-
-int paciente_list(sqlite3 *db) {
-    return bd_query(db, "SELECT id,nombre,apellidos,fecha_nac,genero,telefono,email FROM paciente;",
-                   paciente_callback, nullptr);
-}
-
-int paciente_update(sqlite3 *db, int id,
-                   const string &nombre,
-                   const string &apellidos,
-                   const string &fecha_nac,
-                   const string &genero,
-                   const string &telefono,
-                   const string &email) {
-    string sql = "UPDATE paciente SET nombre='" + nombre + 
-                "',apellidos='" + apellidos + 
-                "',fecha_nac='" + fecha_nac + 
-                "',genero='" + genero + 
-                "',telefono='" + telefono + 
-                "',email='" + email + 
-                "' WHERE id=" + to_string(id) + ";";
-    return bd_exec(db, sql.c_str());
-}
-
-int paciente_delete(sqlite3 *db, int id) {
-    string sql = "DELETE FROM paciente WHERE id=" + to_string(id) + ";";
-    return bd_exec(db, sql.c_str());
-}*/
-
-#include "paciente.h"
-#include <iostream>
-#include <string>
-
-using namespace std;
-
-static int paciente_callback(void *data, int cols, char **values, char **names) {
-    for (int i = 0; i < cols; i++) {
-        cout << names[i] << " = " << (values[i] ? values[i] : "NULL") << "\t";
+bool Paciente::cargar(int id) {
+    sqlite3_stmt* stmt = nullptr;
+    constexpr char SQL[] =
+      "SELECT nombre, dni FROM pacientes WHERE id = ?;";
+    if (sqlite3_prepare_v2(db_, SQL, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error(sqlite3_errmsg(db_));
     }
-    cout << endl;
-    return 0;
+    sqlite3_bind_int(stmt, 1, id);
+    bool ok = false;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        nombre_ = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        dni_    = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        ok = true;
+    }
+    sqlite3_finalize(stmt);
+    return ok;
 }
 
-int paciente_create(sqlite3 *db,
-                   const string &nombre,
-                   const string &apellidos,
-                   const string &fecha_nac,
-                   const string &genero,
-                   const string &telefono,
-                   const string &email) {
-    char *errMsg = nullptr;
-    string sql = "INSERT INTO paciente(nombre,apellidos,fecha_nac,genero,telefono,email) VALUES('" +
-                nombre + "','" + apellidos + "','" + fecha_nac + "','" + genero + "','" + 
-                telefono + "','" + email + "');";
-    
-    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error al crear paciente: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
+bool Paciente::actualizar(int id, const std::string& nombre, const std::string& dni) {
+    sqlite3_stmt* stmt = nullptr;
+    constexpr char SQL[] =
+      "UPDATE pacientes SET nombre = ?, dni = ? WHERE id = ?;";
+    if (sqlite3_prepare_v2(db_, SQL, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error(sqlite3_errmsg(db_));
     }
-    return 0;
+    sqlite3_bind_text(stmt, 1, nombre.c_str(), -1, nullptr);
+    sqlite3_bind_text(stmt, 2, dni.c_str(),   -1, nullptr);
+    sqlite3_bind_int (stmt, 3, id);
+
+    bool ok = (sqlite3_step(stmt) == SQLITE_DONE);
+    sqlite3_finalize(stmt);
+    return ok;
 }
 
-int paciente_list(sqlite3 *db) {
-    char *errMsg = nullptr;
-    int rc = sqlite3_exec(db, "SELECT id,nombre,apellidos,fecha_nac,genero,telefono,email FROM paciente;",
-                         paciente_callback, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error al listar pacientes: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
+bool Paciente::eliminar(int id) {
+    sqlite3_stmt* stmt = nullptr;
+    constexpr char SQL[] =
+      "DELETE FROM pacientes WHERE id = ?;";
+    if (sqlite3_prepare_v2(db_, SQL, -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error(sqlite3_errmsg(db_));
     }
-    return 0;
+    sqlite3_bind_int(stmt, 1, id);
+    bool ok = (sqlite3_step(stmt) == SQLITE_DONE);
+    sqlite3_finalize(stmt);
+    return ok;
 }
 
-int paciente_update(sqlite3 *db, int id,
-                   const string &nombre,
-                   const string &apellidos,
-                   const string &fecha_nac,
-                   const string &genero,
-                   const string &telefono,
-                   const string &email) {
-    char *errMsg = nullptr;
-    string sql = "UPDATE paciente SET nombre='" + nombre + 
-                "',apellidos='" + apellidos + 
-                "',fecha_nac='" + fecha_nac + 
-                "',genero='" + genero + 
-                "',telefono='" + telefono + 
-                "',email='" + email + 
-                "' WHERE id=" + to_string(id) + ";";
-    
-    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error al actualizar paciente: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
-    }
-    return 0;
-}
-
-int paciente_delete(sqlite3 *db, int id) {
-    char *errMsg = nullptr;
-    string sql = "DELETE FROM paciente WHERE id=" + to_string(id) + ";";
-    
-    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        cerr << "Error al eliminar paciente: " << errMsg << endl;
-        sqlite3_free(errMsg);
-        return 1;
-    }
-    return 0;
-}
+} 
