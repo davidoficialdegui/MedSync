@@ -1,5 +1,5 @@
-
 #include "historial_medico.hpp"
+#include "logs.hpp"  // <-- Necesario para guardarLog
 #include <stdexcept>
 
 namespace MedSyc {
@@ -21,6 +21,13 @@ int HistorialMedico::agregar(const Historial& h) {
 
     int rc = sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    if (rc == SQLITE_DONE) {
+        guardarLog("Agregó historial - Paciente ID " + std::to_string(h.paciente_id) +
+                   ", Fecha " + std::to_string(h.fecha) +
+                   ", Desc: " + h.descripcion);
+    }
+
     return (rc == SQLITE_DONE) ? SQLITE_OK : sqlite3_errcode(db_);
 }
 
@@ -43,6 +50,8 @@ std::vector<Historial> HistorialMedico::listar(int paciente_id) {
         out.push_back(std::move(h));
     }
     sqlite3_finalize(stmt);
+
+    guardarLog("Consultó historial del paciente ID " + std::to_string(paciente_id));
     return out;
 }
 
@@ -56,7 +65,12 @@ bool HistorialMedico::eliminar(int id) {
     sqlite3_bind_int(stmt, 1, id);
     bool ok = (sqlite3_step(stmt) == SQLITE_DONE);
     sqlite3_finalize(stmt);
+
+    if (ok) {
+        guardarLog("Eliminó historial médico con ID " + std::to_string(id));
+    }
+
     return ok;
 }
 
-} 
+} // namespace MedSyc

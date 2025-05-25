@@ -2,6 +2,7 @@
 #include <iostream>
 #include <limits>
 #include <ctime>
+#include "logs.hpp"
 
 namespace MedSyc {
 
@@ -40,8 +41,15 @@ if (std::cin.fail()) {
     std::cout << " Entrada inválida. Intenta de nuevo.\n";
     break;
 }
-    if (!auth_.login(u,p))
-      std::cout << "Credenciales inválidas.\n";
+    if (!auth_.login(u,p)){
+    std::cout << "Credenciales inválidas.\n";
+    setUsuarioLogueado(u);
+    guardarLog("Intento de inicio de sesión");
+    }
+    else {
+      setUsuarioLogueado(u);
+      guardarLog("Inicio de sesión");
+}
   }
 
   const auto role = auth_.role();
@@ -77,6 +85,7 @@ if (std::cin.fail()) {
         // Listar historiales
         const char* sql = "SELECT id, paciente_id, fecha, descripcion FROM historial_medico;";
         sqlite3_stmt* stmt = nullptr;
+        guardarLog("Admin - Ver historiales médicos");
         if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
     std::cerr << "Error al preparar la consulta: " << sqlite3_errmsg(db_) << std::endl;
     break;
@@ -98,6 +107,7 @@ if (std::cin.fail()) {
         const char* sql = 
           "SELECT id, paciente_id, medico_id, fecha_hora, motivo FROM cita;";
         sqlite3_stmt* stmt = nullptr;
+        guardarLog("Admin - Ver todas las citas");
         if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
     std::cerr << "Error al preparar la consulta: " << sqlite3_errmsg(db_) << std::endl;
     break;
@@ -120,6 +130,7 @@ if (std::cin.fail()) {
         const char* sql = 
           "SELECT id, nombre, especialidad, telefono, email FROM medico;";
         sqlite3_stmt* stmt = nullptr;
+         guardarLog("Admin - Ver todos los médicos");
         if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
     std::cerr << "Error al preparar la consulta: " << sqlite3_errmsg(db_) << std::endl;
     break;
@@ -142,6 +153,7 @@ if (std::cin.fail()) {
         const char* sql = 
           "SELECT id, paciente_id, fecha, problema, estado, respuesta FROM reportes;";
         sqlite3_stmt* stmt = nullptr;
+         guardarLog("Admin - Ver todos los reportes");
         if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
     std::cerr << "Error al preparar la consulta: " << sqlite3_errmsg(db_) << std::endl;
     break;
@@ -161,6 +173,7 @@ if (std::cin.fail()) {
       } break;
 
       case 5: {
+        guardarLog("Admin - Eliminar registro");
         // Submenú de eliminación
         std::cout << "\n¿Qué tabla quieres limpiar?\n"
                      "  1) historial_medico\n"
@@ -191,6 +204,7 @@ if (std::cin.fail()) {
           "reportes"
         };
         if (tbl>=1 && tbl<=4) {
+          
           std::string del = 
             "DELETE FROM " + std::string(tables[tbl]) + " WHERE id = ?;";
           sqlite3_stmt* stmt = nullptr;
@@ -199,8 +213,10 @@ if (std::cin.fail()) {
     break;
 }
           sqlite3_bind_int(stmt, 1, id);
-          if (sqlite3_step(stmt)==SQLITE_DONE)
+          if (sqlite3_step(stmt)==SQLITE_DONE){
             std::cout<<"Registro eliminado.\n";
+             guardarLog("Admin - Eliminó de la tabla " + std::string(tables[tbl]) + " el ID " + std::to_string(id));
+          }
           else
             std::cout<<"Error al eliminar.\n";
           sqlite3_finalize(stmt);
@@ -210,6 +226,7 @@ if (std::cin.fail()) {
       } break;
 
       case 6:
+      guardarLog("Admin - Salió del sistema");
         std::cout<<"Hasta luego, Admin.\n";
       break;
 
@@ -238,6 +255,7 @@ if (std::cin.fail()) {
           sqlite3_stmt* stmt_check = nullptr;
           const char* sql_check = "SELECT 1 FROM paciente WHERE id = ?;";
           bool pacienteValido = false;
+           guardarLog("Medico - Crear cita");
 if (sqlite3_prepare_v2(db_, sql_check, -1, &stmt_check, nullptr) == SQLITE_OK) {
   if (sqlite3_bind_int(stmt_check, 1, c.paciente_id) != SQLITE_OK) {
     std::cerr << "Error al preparar la consulta: " << sqlite3_errmsg(db_) << std::endl;
@@ -261,27 +279,33 @@ if (sqlite3_prepare_v2(db_, sql_check, -1, &stmt_check, nullptr) == SQLITE_OK) {
         } break;
         case 2: {
           auto v=citas_.listarPorMedico(auth_.userId());
+          guardarLog("Medico - Ver mis citas");
           for(auto&e:v)
             std::cout<<e.id<<": Pac:"<<e.paciente_id<<" Fecha:"<<e.fecha<<" Motivo:"<<e.motivo<<"\n";
         } break;
         case 3: {
           int pid;
           std::cout<<"ID Paciente: "; std::cin >> pid;
+          
 if (std::cin.fail()) {
     std::cin.clear();
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::cout << " Entrada inválida. Intenta de nuevo.\n";
     break;
 } std::cin.ignore();
+    guardarLog("Medico - Consultó historial del paciente ID " + std::to_string(pid));
+
           auto h=hist_.listar(pid);
           for(auto&x:h)
             std::cout<<x.id<<": "<<x.descripcion<<" ("<<x.fecha<<")\n";
         } break;
         case 4:
           std::cout<<rpt_.reporteMedicos();
+          guardarLog("Medico - Ver reportes");
         break;
         case 5:
           std::cout<<"Adiós.\n";
+           guardarLog("Medico - Salió del sistema");
         break;
       }
     } while(opc!=5);
@@ -300,6 +324,7 @@ if (std::cin.fail()) {
         case 1: {
           Cita c;
           c.paciente_id = auth_.userId();
+          guardarLog("Paciente - Crear cita");
           std::cout<<"Motivo: "; std::getline(std::cin,c.motivo);
           c.medico_id = 0;            // o pedirlo
           c.fecha     = std::time(nullptr);
@@ -309,13 +334,16 @@ if (std::cin.fail()) {
         } break;
         case 2: {
           auto v=citas_.listarPorPaciente(auth_.userId());
+          guardarLog("Paciente - Ver mis citas");
           for(auto&e:v)
             std::cout<<e.id<<": Med:"<<e.medico_id<<" Fecha:"<<e.fecha<<" Motivo:"<<e.motivo<<"\n";
         } break;
         case 3:
+         guardarLog("Paciente - Ver mi reporte");
           std::cout<<rpt_.reportePaciente(auth_.userId());
         break;
         case 4:
+        guardarLog("Paciente - Salió del sistema");
           std::cout<<"Adiós.\n";
         break;
       }

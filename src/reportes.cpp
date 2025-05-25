@@ -1,5 +1,5 @@
-
 #include "reportes.hpp"
+#include "logs.hpp"  // <-- Añadido para registrar acciones
 #include <sqlite3.h>
 #include <sstream>
 #include <stdexcept>
@@ -61,6 +61,9 @@ std::string Reportes::reportePaciente(int paciente_id) {
     }
     sqlite3_finalize(stmt);
 
+    // Log del reporte generado
+    guardarLog("Generó reporte del paciente ID " + std::to_string(paciente_id));
+
     return ss.str();
 }
 
@@ -91,7 +94,10 @@ std::string Reportes::reporteMedicos() {
     }
     sqlite3_finalize(stmt);
 
+    // Log del reporte general generado
+    guardarLog("Generó reporte general de médicos");
+
     return ss.str();
 }
 
-}
+} // namespace MedSyc

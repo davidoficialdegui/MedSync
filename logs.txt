@@ -1,0 +1,4 @@
+[Sun May 25 18:28:24 2025] Usuario: admin1 - Acción: Inicio de sesión
+[Sun May 25 18:28:26 2025] Usuario: admin1 - Acción: Admin - Ver historiales médicos
+[Sun May 25 18:28:29 2025] Usuario: admin1 - Acción: Admin - Ver todas las citas
+[Sun May 25 18:28:30 2025] Usuario: admin1 - Acción: Admin - Ver todos los médicos

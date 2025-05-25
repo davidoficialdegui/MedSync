@@ -1,6 +1,7 @@
 
 #include "citas.hpp"
 #include <stdexcept>
+#include "logs.hpp"
 
 namespace MedSyc {
 
@@ -23,6 +24,10 @@ int Citas::crear(const Cita& c) {
     sqlite3_bind_int64(stmt, 2, c.medico_id);
     sqlite3_bind_int64(stmt, 3, c.fecha);
     sqlite3_bind_text( stmt, 4, c.motivo.c_str(), -1, nullptr);
+    guardarLog("Creó una cita - Paciente ID " + std::to_string(c.paciente_id) +
+           ", Médico ID " + std::to_string(c.medico_id) +
+           ", Fecha " + std::to_string(c.fecha) +
+           ", Motivo: " + c.motivo);
 
     int rc = sqlite3_step(stmt);
     sqlite3_finalize(stmt);

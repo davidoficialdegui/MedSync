@@ -1,4 +1,5 @@
 #include "autenticacion.hpp"
+#include "logs.hpp"  
 #include <stdexcept>
 
 namespace MedSyc {
@@ -11,7 +12,7 @@ Autenticacion::Autenticacion(sqlite3* db)
 
 bool Autenticacion::login(const std::string& user, const std::string& pass) {
     sqlite3_stmt* stmt = nullptr;
-    
+
     constexpr char SQL[] =
       "SELECT id, role FROM usuarios WHERE username = ? AND password = ?;";
     if (sqlite3_prepare_v2(db_, SQL, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -22,10 +23,10 @@ bool Autenticacion::login(const std::string& user, const std::string& pass) {
 
     bool ok = false;
     if (sqlite3_step(stmt) == SQLITE_ROW) {
-        userId_      = sqlite3_column_int   (stmt, 0);
-        role_        = reinterpret_cast<const char*>(
-                         sqlite3_column_text(stmt, 1)
-                       );
+        userId_ = sqlite3_column_int(stmt, 0);
+        role_ = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        username_ = user;  // Guardamos el nombre de usuario
+        setUsuarioLogueado(user);  // Para los logs globales
         ok = true;
     }
     sqlite3_finalize(stmt);
@@ -35,12 +36,17 @@ bool Autenticacion::login(const std::string& user, const std::string& pass) {
 
 void Autenticacion::logout() {
     autenticado_ = false;
-    userId_      = -1;
+    userId_ = -1;
     role_.clear();
+    username_.clear();
 }
 
 bool Autenticacion::estaAutenticado() const {
     return autenticado_;
 }
 
-} 
+std::string Autenticacion::getUsername() const {
+    return username_;
+}
+
+} // namespace MedSyc
