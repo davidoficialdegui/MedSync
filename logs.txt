@@ -8,3 +8,6 @@
 [Sun May 25 18:39:52 2025] Usuario: admin1 - Acción: Admin - Ver todos los médicos
 [Sun May 25 18:39:54 2025] Usuario: admin1 - Acción: Admin - Salió del sistema
 [Sun May 25 18:39:54 2025] Usuario: admin1 - Acción: Cierre normal del sistema
+[Sun May 25 18:45:01 2025] Usuario: admin - Acción: Inicio de sesión
+[Sun May 25 18:45:03 2025] Usuario: admin - Acción: Admin - Salió del sistema
+[Sun May 25 18:45:03 2025] Usuario: admin - Acción: Cierre normal del sistema
