@@ -8,3 +8,9 @@
 [Sun May 25 18:39:52 2025] Usuario: admin1 - Acción: Admin - Ver todos los médicos
 [Sun May 25 18:39:54 2025] Usuario: admin1 - Acción: Admin - Salió del sistema
 [Sun May 25 18:39:54 2025] Usuario: admin1 - Acción: Cierre normal del sistema
+[Sun May 25 19:37:23 2025] Usuario: medico1 - Acción: Inicio de sesión
+[Sun May 25 19:37:25 2025] Usuario: medico1 - Acción: Medico - Ver mis citas
+[Sun May 25 19:37:32 2025] Usuario: medico1 - Acción: Medico - Consultó historial del paciente ID 4
+[Sun May 25 19:37:32 2025] Usuario: medico1 - Acción: Consultó historial del paciente ID 4
+[Sun May 25 19:37:36 2025] Usuario: medico1 - Acción: Medico - Salió del sistema
+[Sun May 25 19:37:36 2025] Usuario: medico1 - Acción: Cierre normal del sistema
