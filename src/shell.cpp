@@ -26,6 +26,7 @@ Shell::Shell(sqlite3* db,
 
 void Shell::run() {
   // Login
+  std::cout << "INICIO DE SESION:\n";
   while (!auth_.estaAutenticado()) {
     std::cout << "Usuario: "; std::string u,p; std::cin >> u;
 if (std::cin.fail()) {
@@ -238,7 +239,7 @@ if (std::cin.fail()) {
 
   } else if (role=="medico") {
     do {
-      std::cout << "\n[MEDICO] 1) Crear cita 2) Ver mis citas 3) Ver historial 4) Ver reportes 5) Salir\n> ";
+      std::cout << "\n[MEDICO]\n 1) Crear cita\n 2) Ver mis citas\n 3) Ver historial\n 4) Ver reportes\n 5) Salir\n> ";
       std::cin >> opc;
 if (std::cin.fail()) {
     std::cin.clear();
@@ -312,7 +313,7 @@ if (std::cin.fail()) {
 
   } else { // paciente
     do {
-      std::cout << "\n[PACIENTE] 1) Crear cita 2) Ver mis citas 3) Mi reporte 4) Salir\n> ";
+      std::cout << "\n[PACIENTE]\n 1) Crear cita\n 2) Ver mis citas\n 3) Mi reporte\n 4) Salir\n> ";
       std::cin >> opc;
 if (std::cin.fail()) {
     std::cin.clear();
