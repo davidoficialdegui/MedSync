@@ -26,7 +26,7 @@ Shell::Shell(sqlite3* db,
 
 void Shell::run() {
   // Login
-  std::cout << "INICIO DE SESION: ";
+  std::cout << "INICIO DE SESION:\n ";
   while (!auth_.estaAutenticado()) {
     std::cout << "Usuario: "; std::string u,p; std::cin >> u;
 if (std::cin.fail()) {
