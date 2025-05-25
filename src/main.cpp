@@ -1,6 +1,6 @@
 #include <iostream>
 #include <stdexcept>
-#include <sqlite3.h>
+#include "sqlite3.h"
 
 #include "autenticacion.hpp"
 #include "admin.hpp"
@@ -12,7 +12,7 @@
 #include "shell.hpp"
 #include "logs.hpp"  // ← necesario para guardarLog()
 
-int main() {
+int main(int argc, char* argv[]) {
     sqlite3* db = nullptr;
     if (sqlite3_open("bd/MedSync.db", &db) != SQLITE_OK) {
         std::cerr << "Error al abrir la base de datos: "
@@ -39,13 +39,20 @@ int main() {
             histSvc,
             rptSvc
         );
-        shell.run();
 
+        if (argc > 1) {
+            std::string usuario = argv[1];
+            std::cout << "Sesión iniciada automáticamente como: " << usuario << std::endl;
+            shell.setLoginAutomatizado(usuario); 
+        } else {
+            std::cout << "INICIO DE SESION:\n";
+        }
+        shell.run();
         guardarLog("Cierre normal del sistema");
 
     } catch (const std::exception& ex) {
         std::cerr << "Excepción: " << ex.what() << std::endl;
-        guardarLog(std::string(" Excepción: ") + ex.what());  // ← Log de error
+        guardarLog(std::string(" Excepción: ") + ex.what());
         sqlite3_close(db);
         return 1;
     }
@@ -53,3 +60,4 @@ int main() {
     sqlite3_close(db);
     return 0;
 }
+

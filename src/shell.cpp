@@ -24,36 +24,48 @@ Shell::Shell(sqlite3* db,
   , rpt_(rptSvc)
 {}
 
+void Shell::setLoginAutomatizado(const std::string& usuario) {
+  // Fuerza la autenticación si viene desde fuera (cliente)
+  auth_.forzarLogin(usuario);
+}
+
 void Shell::run() {
-  // Login
-  std::cout << "INICIO DE SESION:\n";
-  while (!auth_.estaAutenticado()) {
-    std::cout << "Usuario: "; std::string u,p; std::cin >> u;
-if (std::cin.fail()) {
-    std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    std::cout << " Entrada inválida. Intenta de nuevo.\n";
-    break;
-}
-    std::cout << "Clave:   "; std::cin >> p;
-if (std::cin.fail()) {
-    std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    std::cout << " Entrada inválida. Intenta de nuevo.\n";
-    break;
-}
-    if (!auth_.login(u,p)){
-    std::cout << "Credenciales inválidas.\n";
-    setUsuarioLogueado(u);
-    guardarLog("Intento de inicio de sesión");
+  // Solo pedimos login si no viene autenticado (por ejemplo, desde el cliente)
+  if (!auth_.estaAutenticado()) {
+    std::cout << "INICIO DE SESION:\n";
+    while (!auth_.estaAutenticado()) {
+      std::cout << "Usuario: ";
+      std::string u, p;
+      std::cin >> u;
+      if (std::cin.fail()) {
+          std::cin.clear();
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cout << " Entrada inválida. Intenta de nuevo.\n";
+          break;
+      }
+
+      std::cout << "Clave:   ";
+      std::cin >> p;
+      if (std::cin.fail()) {
+          std::cin.clear();
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          std::cout << " Entrada inválida. Intenta de nuevo.\n";
+          break;
+      }
+
+      if (!auth_.login(u, p)) {
+        std::cout << "Credenciales inválidas.\n";
+        setUsuarioLogueado(u);
+        guardarLog("Intento de inicio de sesión");
+      } else {
+        setUsuarioLogueado(u);
+        guardarLog("Inicio de sesión");
+      }
     }
-    else {
-      setUsuarioLogueado(u);
-      guardarLog("Inicio de sesión");
-}
   }
 
   const auto role = auth_.role();
+
   int opc=0;
 
   // --- shell.cpp (solo el bloque admin dentro de Shell::run()) ---
@@ -353,5 +365,7 @@ if (std::cin.fail()) {
 
   sqlite3_close(db_);
 }
+
+
 
 }// namespace MedSyc

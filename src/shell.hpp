@@ -2,7 +2,7 @@
 #ifndef MEDSYC_SHELL_HPP
 #define MEDSYC_SHELL_HPP
 
-#include <sqlite3.h>
+#include "sqlite3.h"
 #include "autenticacion.hpp"
 #include "admin.hpp"
 #include "paciente.hpp"
@@ -24,7 +24,7 @@ public:
           HistorialMedico& histSvc,
           Reportes& rptSvc);
 
-    
+    void setLoginAutomatizado(const std::string& usuario);
     void run();
 
 private:
@@ -40,6 +40,7 @@ private:
     
     void mostrarMenu();
     void manejarOpcion(int opc);
+
 };
 
 } 

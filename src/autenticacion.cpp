@@ -1,5 +1,5 @@
 #include "autenticacion.hpp"
-#include "logs.hpp"  
+#include "logs.hpp"
 #include <stdexcept>
 
 namespace MedSyc {
@@ -25,8 +25,8 @@ bool Autenticacion::login(const std::string& user, const std::string& pass) {
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         userId_ = sqlite3_column_int(stmt, 0);
         role_ = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-        username_ = user;  // Guardamos el nombre de usuario
-        setUsuarioLogueado(user);  // Para los logs globales
+        username_ = user;
+        setUsuarioLogueado(user);
         ok = true;
     }
     sqlite3_finalize(stmt);
@@ -48,5 +48,46 @@ bool Autenticacion::estaAutenticado() const {
 std::string Autenticacion::getUsername() const {
     return username_;
 }
+
+void Autenticacion::forzarLogin(const std::string& usuario) {
+    this->username_ = usuario;
+    this->autenticado_ = true;
+    this->userId_ = obtenerIdDesdeUsuario(usuario);
+    this->role_ = obtenerRolDesdeUsuario(usuario);
+    setUsuarioLogueado(usuario);  
+}
+
+int Autenticacion::obtenerIdDesdeUsuario(const std::string& username) {
+    sqlite3_stmt* stmt = nullptr;
+    int id = -1;
+    const char* sql = "SELECT id FROM usuarios WHERE username = ?";
+
+    if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_STATIC);
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            id = sqlite3_column_int(stmt, 0);
+        }
+        sqlite3_finalize(stmt);
+    }
+
+    return id;
+}
+std::string Autenticacion::obtenerRolDesdeUsuario(const std::string& username) {
+    sqlite3_stmt* stmt = nullptr;
+    std::string rol;
+    const char* sql = "SELECT role FROM usuarios WHERE username = ?";
+
+    if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_STATIC);
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            rol = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+    }
+
+    return rol;
+}
+
+
 
 } // namespace MedSyc

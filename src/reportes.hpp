@@ -2,7 +2,7 @@
 #define MEDSYC_REPORTES_HPP
 
 #include <string>
-#include <sqlite3.h>  
+#include "sqlite3.h"
 
 namespace MedSyc {
 

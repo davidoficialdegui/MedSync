@@ -4,7 +4,7 @@
 #include <string>
 #include <ctime>
 #include <vector>
-#include <sqlite3.h>
+#include "sqlite3.h"
 
 namespace MedSyc {
 

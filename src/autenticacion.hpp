@@ -2,7 +2,7 @@
 #define MEDSYC_AUTENTICACION_HPP
 
 #include <string>
-#include <sqlite3.h>
+#include "sqlite3.h"
 
 namespace MedSyc {
 
@@ -18,6 +18,9 @@ public:
     const std::string& role() const { return role_; }
 
     std::string getUsername() const;  // <- Getter para logs
+    void forzarLogin(const std::string& usuario);
+    int obtenerIdDesdeUsuario(const std::string& usuario);
+    std::string obtenerRolDesdeUsuario(const std::string& usuario);
 
 private:
     sqlite3*    db_;

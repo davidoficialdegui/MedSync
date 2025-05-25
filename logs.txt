@@ -30,3 +30,21 @@
 [Sun May 25 19:11:06 2025] Usuario: admin - Acción: Admin - Eliminó de la tabla cita el ID 1
 [Sun May 25 19:16:33 2025] Usuario: admin - Acción: Admin - Ver historiales médicos
 >>>>>>> 5aff7fab08e5f06ebeafeec0212fbf2864c0ef75
+[Sun May 25 20:07:58 2025] Usuario: medico1 - Acción: Inicio de sesión
+[Sun May 25 20:08:01 2025] Usuario: medico1 - Acción: Medico - Salió del sistema
+[Sun May 25 20:08:01 2025] Usuario: medico1 - Acción: Cierre normal del sistema
+[Sun May 25 20:28:00 2025] Usuario: medico1 - Acción: Intento de inicio de sesión
+[Sun May 25 20:28:06 2025] Usuario: medico1 - Acción: Inicio de sesión
+[Sun May 25 20:28:09 2025] Usuario: medico1 - Acción: Medico - Ver mis citas
+[Sun May 25 20:28:23 2025] Usuario: medico1 - Acción: Medico - Salió del sistema
+[Sun May 25 20:28:23 2025] Usuario: medico1 - Acción: Cierre normal del sistema
+[Sun May 25 20:30:50 2025] Usuario: medico1 - Acción: Inicio de sesión
+[Sun May 25 20:53:56 2025] Usuario: medico1 - Acción: Inicio de sesión
+[Sun May 25 20:53:59 2025] Usuario: medico1 - Acción: Medico - Salió del sistema
+[Sun May 25 20:53:59 2025] Usuario: medico1 - Acción: Cierre normal del sistema
+[Sun May 25 20:55:44 2025] Usuario: medico1 - Acción: Medico - Salió del sistema
+[Sun May 25 20:55:44 2025] Usuario: medico1 - Acción: Cierre normal del sistema
+[Sun May 25 20:57:36 2025] Usuario: medico1 - Acción: Medico - Salió del sistema
+[Sun May 25 20:57:36 2025] Usuario: medico1 - Acción: Cierre normal del sistema
+[Sun May 25 20:57:56 2025] Usuario: medico1 - Acción: Inicio de sesión
+[Sun May 25 20:57:59 2025] Usuario: medico1 - Acción: Medico - Ver mis citas

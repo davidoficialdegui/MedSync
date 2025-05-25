@@ -1,22 +1,22 @@
-
-// server.cpp (Windows)
 #include <iostream>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <sqlite3.h>
+#include <string>
+#include <sstream>
 
 #pragma comment(lib, "ws2_32.lib")
 #define PORT 8080
 #define BUFFER_SIZE 1024
 
-bool verificar_usuario(const std::string& username, const std::string& password) {
+std::string verificar_usuario(const std::string& username, const std::string& password) {
     sqlite3* db;
     sqlite3_stmt* stmt;
-    bool result = false;
+    std::string respuesta = "ACCESO_DENEGADO";
 
     if (sqlite3_open("bd/MedSync.db", &db) != SQLITE_OK) {
         std::cerr << "No se pudo abrir la base de datos: " << sqlite3_errmsg(db) << std::endl;
-        return false;
+        return "ERROR_BD";
     }
 
     const char* sql = "SELECT COUNT(*) FROM usuarios WHERE username=? AND password=?";
@@ -26,13 +26,15 @@ bool verificar_usuario(const std::string& username, const std::string& password)
 
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             int count = sqlite3_column_int(stmt, 0);
-            result = (count > 0);
+            if (count > 0) {
+                respuesta = "ACCESO_CONCEDIDO";
+            }
         }
     }
 
     sqlite3_finalize(stmt);
     sqlite3_close(db);
-    return result;
+    return respuesta;
 }
 
 int main() {
@@ -60,10 +62,11 @@ int main() {
         recv(client_socket, buffer, BUFFER_SIZE, 0);
 
         std::string received(buffer);
-        std::string username = received.substr(0, received.find(" "));
-        std::string password = received.substr(received.find(" ") + 1);
+        std::istringstream ss(received);
+        std::string username, password;
+        ss >> username >> password;
 
-        std::string respuesta = verificar_usuario(username, password) ? "ACCESO_CONCEDIDO" : "ACCESO_DENEGADO";
+        std::string respuesta = verificar_usuario(username, password);
         send(client_socket, respuesta.c_str(), respuesta.size(), 0);
         closesocket(client_socket);
     }

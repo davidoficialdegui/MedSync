@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
-#include <sqlite3.h>
+#include "sqlite3.h"
 
 namespace MedSyc {
 

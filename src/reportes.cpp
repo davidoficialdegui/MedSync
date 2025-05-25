@@ -1,6 +1,6 @@
 #include "reportes.hpp"
 #include "logs.hpp"  // <-- Añadido para registrar acciones
-#include <sqlite3.h>
+#include "sqlite3.h"
 #include <sstream>
 #include <stdexcept>
 #include <ctime>
