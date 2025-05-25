@@ -1,4 +1,3 @@
-
 #include "shell.hpp"
 #include <iostream>
 #include <limits>
@@ -25,10 +24,22 @@ Shell::Shell(sqlite3* db,
 {}
 
 void Shell::run() {
-  
+  // Login
   while (!auth_.estaAutenticado()) {
     std::cout << "Usuario: "; std::string u,p; std::cin >> u;
+if (std::cin.fail()) {
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << " Entrada inválida. Intenta de nuevo.\n";
+    break;
+}
     std::cout << "Clave:   "; std::cin >> p;
+if (std::cin.fail()) {
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << " Entrada inválida. Intenta de nuevo.\n";
+    break;
+}
     if (!auth_.login(u,p))
       std::cout << "Credenciales inválidas.\n";
   }
@@ -36,10 +47,12 @@ void Shell::run() {
   const auto role = auth_.role();
   int opc=0;
 
+  // --- shell.cpp (solo el bloque admin dentro de Shell::run()) ---
 #include "shell.hpp"
 #include <iostream>
 #include <limits>
 
+// … dentro de Shell::run(), después de login …
 
 if (role == "admin") {
   do {
@@ -51,14 +64,23 @@ if (role == "admin") {
                  "5) Eliminar registro\n"
                  "6) Salir\n> ";
     std::cin >> opc;
+if (std::cin.fail()) {
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << " Entrada inválida. Intenta de nuevo.\n";
+    break;
+}
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     switch (opc) {
       case 1: {
-        
+        // Listar historiales
         const char* sql = "SELECT id, paciente_id, fecha, descripcion FROM historial_medico;";
         sqlite3_stmt* stmt = nullptr;
-        sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr);
+        if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+    std::cerr << "Error al preparar la consulta: " << sqlite3_errmsg(db_) << std::endl;
+    break;
+}
         std::cout << "\nHistoriales Médicos:\n";
         while (sqlite3_step(stmt) == SQLITE_ROW) {
           std::cout
@@ -72,11 +94,14 @@ if (role == "admin") {
       } break;
 
       case 2: {
-       
+        // Listar citas
         const char* sql = 
           "SELECT id, paciente_id, medico_id, fecha_hora, motivo FROM cita;";
         sqlite3_stmt* stmt = nullptr;
-        sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr);
+        if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+    std::cerr << "Error al preparar la consulta: " << sqlite3_errmsg(db_) << std::endl;
+    break;
+}
         std::cout << "\nCitas:\n";
         while (sqlite3_step(stmt) == SQLITE_ROW) {
           std::cout
@@ -91,11 +116,14 @@ if (role == "admin") {
       } break;
 
       case 3: {
-        
+        // Listar médicos
         const char* sql = 
           "SELECT id, nombre, especialidad, telefono, email FROM medico;";
         sqlite3_stmt* stmt = nullptr;
-        sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr);
+        if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+    std::cerr << "Error al preparar la consulta: " << sqlite3_errmsg(db_) << std::endl;
+    break;
+}
         std::cout << "\nMédicos:\n";
         while (sqlite3_step(stmt) == SQLITE_ROW) {
           std::cout
@@ -110,11 +138,14 @@ if (role == "admin") {
       } break;
 
       case 4: {
-        
+        // Listar reportes
         const char* sql = 
           "SELECT id, paciente_id, fecha, problema, estado, respuesta FROM reportes;";
         sqlite3_stmt* stmt = nullptr;
-        sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr);
+        if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+    std::cerr << "Error al preparar la consulta: " << sqlite3_errmsg(db_) << std::endl;
+    break;
+}
         std::cout << "\nReportes:\n";
         while (sqlite3_step(stmt) == SQLITE_ROW) {
           std::cout
@@ -130,16 +161,28 @@ if (role == "admin") {
       } break;
 
       case 5: {
-        
+        // Submenú de eliminación
         std::cout << "\n¿Qué tabla quieres limpiar?\n"
                      "  1) historial_medico\n"
                      "  2) cita\n"
                      "  3) medico\n"
                      "  4) reportes\n"
                      "Opción: ";
-        int tbl; std::cin>>tbl;
+        int tbl; std::cin >> tbl;
+if (std::cin.fail()) {
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << " Entrada inválida. Intenta de nuevo.\n";
+    break;
+}
         std::cout<<"ID a eliminar: ";
-        int id; std::cin>>id;
+        int id; std::cin >> id;
+if (std::cin.fail()) {
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << " Entrada inválida. Intenta de nuevo.\n";
+    break;
+}
         const char* tables[] = {
           nullptr,
           "historial_medico",
@@ -151,7 +194,10 @@ if (role == "admin") {
           std::string del = 
             "DELETE FROM " + std::string(tables[tbl]) + " WHERE id = ?;";
           sqlite3_stmt* stmt = nullptr;
-          sqlite3_prepare_v2(db_, del.c_str(), -1, &stmt, nullptr);
+          if (sqlite3_prepare_v2(db_, del.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+    std::cerr << "Error al preparar la consulta: " << sqlite3_errmsg(db_) << std::endl;
+    break;
+}
           sqlite3_bind_int(stmt, 1, id);
           if (sqlite3_step(stmt)==SQLITE_DONE)
             std::cout<<"Registro eliminado.\n";
@@ -176,11 +222,36 @@ if (role == "admin") {
   } else if (role=="medico") {
     do {
       std::cout << "\n[MEDICO] 1) Crear cita 2) Ver mis citas 3) Ver historial 4) Ver reportes 5) Salir\n> ";
-      std::cin>>opc; std::cin.ignore();
+      std::cin >> opc;
+if (std::cin.fail()) {
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << " Entrada inválida. Intenta de nuevo.\n";
+    break;
+} std::cin.ignore();
       switch(opc) {
         case 1: {
           Cita c;
-          std::cout<<"ID Paciente: "; std::cin>>c.paciente_id; std::cin.ignore();
+          std::cout << "ID Paciente: ";
+          std::cin >> c.paciente_id;
+          std::cin.ignore();
+          sqlite3_stmt* stmt_check = nullptr;
+          const char* sql_check = "SELECT 1 FROM paciente WHERE id = ?;";
+          bool pacienteValido = false;
+if (sqlite3_prepare_v2(db_, sql_check, -1, &stmt_check, nullptr) == SQLITE_OK) {
+  if (sqlite3_bind_int(stmt_check, 1, c.paciente_id) != SQLITE_OK) {
+    std::cerr << "Error al preparar la consulta: " << sqlite3_errmsg(db_) << std::endl;
+    break;
+  }
+  if (sqlite3_step(stmt_check) == SQLITE_ROW) {
+    pacienteValido = true;
+  }
+}
+          sqlite3_finalize(stmt_check);
+          if (!pacienteValido) {
+            std::cout << "El paciente no existe.";
+            break;
+          }
           std::cout<<"Motivo: "; std::getline(std::cin,c.motivo);
           c.medico_id = auth_.userId();
           c.fecha     = std::time(nullptr);
@@ -195,7 +266,13 @@ if (role == "admin") {
         } break;
         case 3: {
           int pid;
-          std::cout<<"ID Paciente: "; std::cin>>pid; std::cin.ignore();
+          std::cout<<"ID Paciente: "; std::cin >> pid;
+if (std::cin.fail()) {
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << " Entrada inválida. Intenta de nuevo.\n";
+    break;
+} std::cin.ignore();
           auto h=hist_.listar(pid);
           for(auto&x:h)
             std::cout<<x.id<<": "<<x.descripcion<<" ("<<x.fecha<<")\n";
@@ -209,16 +286,22 @@ if (role == "admin") {
       }
     } while(opc!=5);
 
-  } else { 
+  } else { // paciente
     do {
       std::cout << "\n[PACIENTE] 1) Crear cita 2) Ver mis citas 3) Mi reporte 4) Salir\n> ";
-      std::cin>>opc; std::cin.ignore();
+      std::cin >> opc;
+if (std::cin.fail()) {
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << " Entrada inválida. Intenta de nuevo.\n";
+    break;
+} std::cin.ignore();
       switch(opc) {
         case 1: {
           Cita c;
           c.paciente_id = auth_.userId();
           std::cout<<"Motivo: "; std::getline(std::cin,c.motivo);
-          c.medico_id = 0;           
+          c.medico_id = 0;            // o pedirlo
           c.fecha     = std::time(nullptr);
           citas_.crear(c)==SQLITE_OK
             ? std::cout<<"Cita creada.\n"
@@ -242,4 +325,4 @@ if (role == "admin") {
   sqlite3_close(db_);
 }
 
-} 
+}// namespace MedSyc
