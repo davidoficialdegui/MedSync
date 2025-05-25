@@ -11,3 +11,13 @@
 [Sun May 25 18:45:01 2025] Usuario: admin - Acción: Inicio de sesión
 [Sun May 25 18:45:03 2025] Usuario: admin - Acción: Admin - Salió del sistema
 [Sun May 25 18:45:03 2025] Usuario: admin - Acción: Cierre normal del sistema
+[Sun May 25 19:06:37 2025] Usuario: admin - Acción: Inicio de sesión
+[Sun May 25 19:08:12 2025] Usuario: admin - Acción: Admin - Ver historiales médicos
+[Sun May 25 19:08:22 2025] Usuario: admin - Acción: Admin - Ver todas las citas
+[Sun May 25 19:08:23 2025] Usuario: admin - Acción: Admin - Ver todos los médicos
+[Sun May 25 19:08:24 2025] Usuario: admin - Acción: Admin - Ver todos los reportes
+[Sun May 25 19:08:59 2025] Usuario: admin - Acción: Cierre normal del sistema
+[Sun May 25 19:09:50 2025] Usuario: admin - Acción: Inicio de sesión
+[Sun May 25 19:09:54 2025] Usuario: admin - Acción: Admin - Eliminar registro
+[Sun May 25 19:11:06 2025] Usuario: admin - Acción: Admin - Eliminó de la tabla cita el ID 1
+[Sun May 25 19:16:33 2025] Usuario: admin - Acción: Admin - Ver historiales médicos
